@@ -10,9 +10,9 @@ logger = get_logger(__name__)
 
 @shared_task(trail=True)
 def summarize_content(hash: str):
-    # if persist.has_summary(hash):
-    #     logger.info(f"[Summarize] Skipping - Already processed: {hash}")
-    #     return
+    if persist.has_summary(hash):
+        logger.info(f"[Summarize] Skipping - Already processed: {hash}")
+        return
 
     store = disk_store.default_store(logging_func=logger.info)
     docs = store.restore_document_content(hash)

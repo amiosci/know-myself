@@ -1,5 +1,5 @@
 import dataclasses
-from flask import request, url_for, redirect, Flask
+from flask import request, Flask
 import url_tools
 import flask_celery
 
@@ -49,9 +49,10 @@ def register_routes(app: Flask):
 
     @app.post("/process/<hash>/results")
     def get_processing_result_content(hash: str):
-        task_id = persist.get_processing_registration(hash)
         value = {}
         process_result = None
+
+        task_id = persist.get_processing_registration(hash)
         if task_id:
             process_result = persist.get_task_result(task_id)
             if process_result == "SUCCESS":
