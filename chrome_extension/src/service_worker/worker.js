@@ -36,7 +36,6 @@ const createSummarySync = async ({ hash, url, title }) => {
 const registerSummarizeTask = async ({ url, title }) => {
     const registerResultResponse = await fetch(`${apiHost}/process`, {
         method: 'POST',
-        signal: AbortSignal.timeout(3600 * 1000), // 1h
         headers: {
             'Content-Type': 'application/json',
         },
