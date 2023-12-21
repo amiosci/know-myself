@@ -3,43 +3,6 @@ const getApiHost = async () => {
     return apiHost['kms.apihost'] || 'http://127.0.0.1:5000';
 }
 
-
-const createSummarySync = async ({ hash, url, title }) => {
-    const apiHost = await getApiHost();
-
-    const hasSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
-        method: 'GET'
-    });
-
-    const readingListSummaryResponse = await hasSummaryResponse.json();
-
-    if (readingListSummaryResponse.hasSummary) {
-        console.log(`Fetching existing for ${url}`);
-        const getSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
-            method: 'GET'
-        });
-
-        const summaryResponse = await getSummaryResponse.json();
-        console.log(summaryResponse.summary);
-        return summaryResponse;
-    }
-
-    const createSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            'url': url,
-            'title': title
-        }),
-    });
-
-    const createSummaryJson = await createSummaryResponse.json();
-    console.log(createSummaryJson);
-    return createSummaryJson;
-}
-
 const registerSummarizeTask = async ({ url, title }) => {
     const apiHost = await getApiHost();
     const registerResultResponse = await fetch(`${apiHost}/process`, {
