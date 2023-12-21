@@ -30,11 +30,12 @@ const init = () => {
     });
 
     const table = document.querySelector('#table');
+
     const dialog = document.querySelector('.summary-dialog');
-    const newWindowButton = dialog.querySelector('.new-window');
     const summaryElement = dialog.querySelector(".summary-content");
     const urlElement = dialog.querySelector(".summary-dialog-url");
 
+    const newWindowButton = dialog.querySelector('.new-window');
     newWindowButton.addEventListener('click', () => {
         dialog.hide();
         window.open(urlElement.textContent);
@@ -70,8 +71,8 @@ const init = () => {
     const settingsCloseButton = document.querySelector('.settings-close');
     settingsCloseButton.addEventListener('click', () => { settingsDialog.hide(); });
 
-    const openSettingsDialog = document.querySelector('.settings-open');
-    openSettingsDialog.addEventListener('click', () => {
+    const openSettingsButton = document.querySelector('.settings-open');
+    openSettingsButton.addEventListener('click', () => {
         settingsApiHost.value = localStorage.getItem("kms.apihost") || 'http://127.0.0.1:5000';
 
         settingsDialog.show();

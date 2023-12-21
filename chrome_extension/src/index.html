@@ -3,13 +3,12 @@
 
 <head>
   <link rel="stylesheet" type="text/css" href="smart-webcomponents.css" />
-
   <link rel="stylesheet" type="text/css" href="shoelace_dist/themes/light.css" />
 
   <script type="module" src="shoelace.js" data-shoelace="shoelace_dist"></script>
   <script type="module" src="smart-webcomponents.js"></script>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
   <style>
     .summary-content {
       font-size: 1.2rem;
@@ -30,6 +29,7 @@
   </div>
 </body>
 
+<!-- View Document Summary Dialog -->
 <sl-dialog label="Document Summary" class="summary-dialog" style="--width: 50vw;">
   <h4 class="summary-dialog-url"></h4>
   <span class="summary-content"></span>
@@ -37,11 +37,12 @@
   <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
 </sl-dialog>
 
+<!-- Settings Dialog -->
 <sl-dialog label="Extension settings" class="settings-dialog" style="--width: 50vw;">
   <sl-input class="settings-api-host" label="API Host"></sl-input>
 
   <sl-button class="settings-submit" slot="footer" variant="primary">Submit</sl-button>
-  <sl-button class="settings-close" slot="footer" variant="primary">Close</sl-button>
+  <sl-button class="settings-close" slot="footer" variant="default">Close</sl-button>
 </sl-dialog>
 
 </html>
