@@ -11,7 +11,8 @@
         "tabs",
         "activeTab",
         "contextMenus",
-        "bookmarks"
+        "bookmarks",
+        "storage"
     ],
     "host_permissions": [
         "http://*/*",

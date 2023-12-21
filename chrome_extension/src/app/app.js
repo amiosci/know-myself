@@ -55,6 +55,27 @@ const init = () => {
 
         dialog.show();
     });
+
+    // settings page
+    const settingsDialog = document.querySelector('.settings-dialog');
+    const settingsApiHost = document.querySelector('.settings-api-host');
+
+    const settingsSubmitButton = document.querySelector('.settings-submit');
+    settingsSubmitButton.addEventListener('click', () => {
+        localStorage.setItem("kms.apihost", settingsApiHost.value);
+
+        settingsDialog.hide();
+    });
+
+    const settingsCloseButton = document.querySelector('.settings-close');
+    settingsCloseButton.addEventListener('click', () => { settingsDialog.hide(); });
+
+    const openSettingsDialog = document.querySelector('.settings-open');
+    openSettingsDialog.addEventListener('click', () => {
+        settingsApiHost.value = localStorage.getItem("kms.apihost") || 'http://127.0.0.1:5000';
+
+        settingsDialog.show();
+    });
 }
 
 document.readyState === 'complete' ? init() : window.onload = init;

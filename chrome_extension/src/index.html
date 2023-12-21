@@ -23,19 +23,25 @@
 </head>
 
 <body class="viewport">
-  <h1>Mynd Myself</h1>
-
-  <div class="container">
-    <smart-table page-size='10' column-menu paging filtering sortable id="table">
+  <div>
+    <sl-button class="settings-open">Open Settings</sl-button>
+    <smart-table page-size='25' column-menu paging filtering sortable id="table">
     </smart-table>
   </div>
-
-  <sl-dialog label="Document Summary" class="summary-dialog" style="--width: 50vw;">
-    <h4 class="summary-dialog-url"></h4>
-    <span class="summary-content"></span>
-
-    <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
-  </sl-dialog>
 </body>
+
+<sl-dialog label="Document Summary" class="summary-dialog" style="--width: 50vw;">
+  <h4 class="summary-dialog-url"></h4>
+  <span class="summary-content"></span>
+
+  <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
+</sl-dialog>
+
+<sl-dialog label="Extension settings" class="settings-dialog" style="--width: 50vw;">
+  <sl-input class="settings-api-host" label="API Host"></sl-input>
+
+  <sl-button class="settings-submit" slot="footer" variant="primary">Submit</sl-button>
+  <sl-button class="settings-close" slot="footer" variant="primary">Close</sl-button>
+</sl-dialog>
 
 </html>
