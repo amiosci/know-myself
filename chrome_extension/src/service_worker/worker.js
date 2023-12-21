@@ -1,6 +1,16 @@
+const getApiHost = async () => {
+    const apiHost = await chrome.storage.sync.get('kms.apihost');
+    console.log(apiHost);
+
+    if (apiHost.length) {
+        return apiHost;
+    }
+
+    return 'http://127.0.0.1:5000';
+}
 
 const createSummarySync = async ({ hash, url, title }) => {
-    const apiHost = await chrome.storage.sync.get('kms.apihost') || 'http://127.0.0.1:5000';
+    const apiHost = await getApiHost();
 
     const hasSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
         method: 'GET'
@@ -31,9 +41,11 @@ const createSummarySync = async ({ hash, url, title }) => {
 
     const createSummaryJson = await createSummaryResponse.json();
     console.log(createSummaryJson);
+    return createSummaryJson;
 }
 
 const registerSummarizeTask = async ({ url, title }) => {
+    const apiHost = await getApiHost();
     const registerResultResponse = await fetch(`${apiHost}/process`, {
         method: 'POST',
         headers: {
