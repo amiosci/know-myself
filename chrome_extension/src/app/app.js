@@ -4,10 +4,10 @@ const init = () => {
     Smart('#table', class {
         get properties() {
             return {
-                sortMode: "one",
+                sortMode: 'one',
                 dataSource: new Smart.DataAdapter({
                     dataSource: {
-                        method: "GET",
+                        method: 'GET',
                         url: `${apiHost}/process`,
                         async: false,
                         timeout: null
@@ -32,8 +32,8 @@ const init = () => {
     const table = document.querySelector('#table');
 
     const dialog = document.querySelector('.summary-dialog');
-    const summaryElement = dialog.querySelector(".summary-content");
-    const urlElement = dialog.querySelector(".summary-dialog-url");
+    const summaryElement = dialog.querySelector('.summary-content');
+    const urlElement = dialog.querySelector('.summary-dialog-url');
 
     const newWindowButton = dialog.querySelector('.new-window');
     newWindowButton.addEventListener('click', () => {
@@ -46,7 +46,7 @@ const init = () => {
         const rowUrl = e.detail.row.url;
 
         const getSummaryResponse = await fetch(`${apiHost}/summary/${rowHash}`, {
-            method: "GET"
+            method: 'GET'
         });
 
         const summaryResponse = await getSummaryResponse.json();
@@ -63,7 +63,7 @@ const init = () => {
 
     const settingsSubmitButton = document.querySelector('.settings-submit');
     settingsSubmitButton.addEventListener('click', () => {
-        localStorage.setItem("kms.apihost", settingsApiHost.value);
+        localStorage.setItem('kms.apihost', settingsApiHost.value);
 
         settingsDialog.hide();
     });
@@ -73,7 +73,7 @@ const init = () => {
 
     const openSettingsButton = document.querySelector('.settings-open');
     openSettingsButton.addEventListener('click', () => {
-        settingsApiHost.value = localStorage.getItem("kms.apihost") || 'http://127.0.0.1:5000';
+        settingsApiHost.value = localStorage.getItem('kms.apihost') || 'http://127.0.0.1:5000';
 
         settingsDialog.show();
     });

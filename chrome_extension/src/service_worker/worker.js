@@ -1,9 +1,9 @@
 
 const createSummarySync = async ({ hash, url, title }) => {
-    const apiHost = await chrome.storage.sync.get("kms.apihost") || 'http://127.0.0.1:5000';
+    const apiHost = await chrome.storage.sync.get('kms.apihost') || 'http://127.0.0.1:5000';
 
     const hasSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
-        method: "GET"
+        method: 'GET'
     });
 
     const readingListSummaryResponse = await hasSummaryResponse.json();
@@ -11,7 +11,7 @@ const createSummarySync = async ({ hash, url, title }) => {
     if (readingListSummaryResponse.hasSummary) {
         console.log(`Fetching existing for ${url}`);
         const getSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
-            method: "GET"
+            method: 'GET'
         });
         const summaryResponse = await getSummaryResponse.json();
         console.log(summaryResponse.summary);
@@ -19,13 +19,13 @@ const createSummarySync = async ({ hash, url, title }) => {
     }
 
     const createSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            "url": url,
-            "title": title
+            'url': url,
+            'title': title
         }),
     });
 
@@ -35,14 +35,14 @@ const createSummarySync = async ({ hash, url, title }) => {
 
 const registerSummarizeTask = async ({ url, title }) => {
     const registerResultResponse = await fetch(`${apiHost}/process`, {
-        method: "POST",
+        method: 'POST',
         signal: AbortSignal.timeout(3600 * 1000), // 1h
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            "url": url,
-            "title": title
+            'url': url,
+            'title': title
         }),
     });
 
@@ -89,5 +89,5 @@ chrome.readingList.onEntryAdded.addListener(async (entry) => {
 
 // Chrome extension local UI
 chrome.action.onClicked.addListener(() => {
-    chrome.tabs.create({ url: chrome.runtime.getURL("index.html"), pinned: true });
+    chrome.tabs.create({ url: chrome.runtime.getURL('index.html'), pinned: true });
 });
