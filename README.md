@@ -10,7 +10,7 @@ Redis and Postgres are used for the Celery task backend, and persistence layer r
 
 Current integrations support summarization.
 
-Desired/In Progress pipeline integrations:
+#### Desired/In Progress pipeline integrations
 
 * Entity Relation Extraction with storage into graph DB
 * Knowledge graph generation
@@ -18,7 +18,8 @@ Desired/In Progress pipeline integrations:
 * Multi-modal integrations over content
   * Capture non-text content/use multi-modal extraction approaches
 
-Desired/In Progress web extension integrations:
+#### Desired/In Progress web extension integrations
+
 * Annotating tabs by context-menu over selected text
 * Bookmark folder watching, in addition to reading list
 * Firefox integration (builder already supports)
@@ -34,7 +35,8 @@ With the chrome extension loaded and not installed through your profile, any cha
 
 ### How to run
 
-Prerequisites:
+#### Prerequisites
+
 * Python 3.11
   * Virtual environment recommended
 * Docker
@@ -69,7 +71,10 @@ By using a network-addressible backends (Redis, Postgres, DocumentStore), this c
 #### Run Firefox extension
 
 **Not implemented**
+
 `cd chrome_extension; npm start:firefox`
+
+**Not implemented**
 
 #### Cleanup TODO
 * Trim exported `requirements.txt`
