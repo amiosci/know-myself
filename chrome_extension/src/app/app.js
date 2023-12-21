@@ -80,8 +80,8 @@ const init = async () => {
     settingsCloseButton.addEventListener('click', () => { settingsDialog.hide(); });
 
     const openSettingsButton = document.querySelector('.settings-open');
-    openSettingsButton.addEventListener('click', () => {
-        settingsApiHost.value = localStorage.getItem('kms.apihost') || 'http://127.0.0.1:5000';
+    openSettingsButton.addEventListener('click', async () => {
+        settingsApiHost.value = await getApiHost();
 
         settingsDialog.show();
     });
