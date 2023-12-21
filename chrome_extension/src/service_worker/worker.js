@@ -1,11 +1,8 @@
 const getApiHost = async () => {
     const apiHost = await chrome.storage.sync.get('kms.apihost');
-    if (apiHost.length !== undefined) {
-        return apiHost;
-    }
-
-    return 'http://127.0.0.1:5000';
+    return apiHost['kms.apihost'] || 'http://127.0.0.1:5000';
 }
+
 
 const createSummarySync = async ({ hash, url, title }) => {
     const apiHost = await getApiHost();

@@ -1,10 +1,6 @@
 const getApiHost = async () => {
     const apiHost = await chrome.storage.sync.get('kms.apihost');
-    if (apiHost.length !== undefined) {
-        return apiHost;
-    }
-
-    return 'http://127.0.0.1:5000';
+    return apiHost['kms.apihost'] || 'http://127.0.0.1:5000';
 }
 
 const init = async () => {
@@ -70,8 +66,8 @@ const init = async () => {
     const settingsApiHost = document.querySelector('.settings-api-host');
 
     const settingsSubmitButton = document.querySelector('.settings-submit');
-    settingsSubmitButton.addEventListener('click', () => {
-        localStorage.setItem('kms.apihost', settingsApiHost.value);
+    settingsSubmitButton.addEventListener('click', async () => {
+        await chrome.storage.sync.set({'kms.apihost': settingsApiHost.value});
 
         settingsDialog.hide();
     });
