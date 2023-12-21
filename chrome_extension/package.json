@@ -1,7 +1,6 @@
 {
     "name": "kms-chrome-extension",
     "version": "0.1.0",
-    "author": "Brandon Amiosci <brandon@amiosci.com>",
     "devDependencies": {
         "extension-cli": "^1.2.4"
     },
