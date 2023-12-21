@@ -77,4 +77,4 @@ By using a network-addressible backends (Redis, Postgres, DocumentStore), this c
 **Not implemented**
 
 #### Cleanup TODO
-* Trim exported `requirements.txt`
+[x] Trim exported `requirements.txt`
