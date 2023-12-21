@@ -1,7 +1,6 @@
 const apiHost = 'http://127.0.0.1:5000';
 
 const init = () => {
-    // Init table
     Smart('#table', class {
         get properties() {
             return {
@@ -11,8 +10,6 @@ const init = () => {
                         method: "GET",
                         url: `${apiHost}/process`,
                         async: false,
-
-                        // also default
                         timeout: null
                     },
                     dataSourceType: 'json',
@@ -31,7 +28,17 @@ const init = () => {
             };
         }
     });
+
     const table = document.querySelector('#table');
+    const dialog = document.querySelector('.summary-dialog');
+    const newWindowButton = dialog.querySelector('.new-window');
+    const summaryElement = dialog.querySelector(".summary-content");
+    const urlElement = dialog.querySelector(".summary-dialog-url");
+
+    newWindowButton.addEventListener('click', () => {
+        dialog.hide();
+        window.open(urlElement.textContent);
+    });
 
     table.addEventListener('cellClick', async (e) => {
         const rowHash = e.detail.row.hash;
@@ -39,26 +46,14 @@ const init = () => {
 
         const getSummaryResponse = await fetch(`${apiHost}/summary/${rowHash}`, {
             method: "GET"
-        }
-        );
+        });
+
         const summaryResponse = await getSummaryResponse.json();
 
-        const dialog = document.getElementById("summaryDialog");
-        const summaryElement = dialog.querySelector("#summary");
         summaryElement.textContent = summaryResponse.summary;
-
-        const urlElement = dialog.querySelector("#dialog_url")
         urlElement.textContent = rowUrl;
 
-        dialog.showModal();
-        dialog.querySelector("#cancel").addEventListener("click", () => {
-            dialog.close();
-        });
-
-        dialog.querySelector("#open").addEventListener("click", () => {
-            dialog.close();
-            window.open(rowUrl);
-        });
+        dialog.show();
     });
 }
 
