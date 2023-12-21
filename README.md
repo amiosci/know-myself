@@ -72,7 +72,7 @@ By using a network-addressible backends (Redis, Postgres, DocumentStore), this c
 
 **Not implemented**
 
-`cd chrome_extension; npm start:firefox`
+`cd chrome_extension; npm run start:firefox`
 
 **Not implemented**
 
