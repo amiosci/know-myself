@@ -23,9 +23,10 @@ const createSummarySync = async ({ hash, url, title }) => {
         const getSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
             method: 'GET'
         });
+
         const summaryResponse = await getSummaryResponse.json();
         console.log(summaryResponse.summary);
-        return;
+        return summaryResponse;
     }
 
     const createSummaryResponse = await fetch(`${apiHost}/summary/${hash}`, {
@@ -70,6 +71,7 @@ const processReadingListItem = async ({ url, title }) => {
 
     const hash = await registerSummarizeTask({ url, title });
     console.log(`${hash}: ${url}`);
+    return hash;
 }
 
 // one-time registration
@@ -81,10 +83,10 @@ chrome.runtime.onInstalled.addListener(async () => {
         contexts: ['all'],
     });
 
-    chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    chrome.contextMenus.onClicked.addListener(async ({ frameUrl }, { title }) => {
         await processReadingListItem({
-            url: info.frameUrl,
-            title: tab.title
+            url: frameUrl,
+            title: title
         });
     });
 
