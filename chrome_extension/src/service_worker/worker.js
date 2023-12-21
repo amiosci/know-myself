@@ -1,8 +1,6 @@
 const getApiHost = async () => {
     const apiHost = await chrome.storage.sync.get('kms.apihost');
-    console.log(apiHost);
-
-    if (apiHost.length) {
+    if (apiHost.length !== undefined) {
         return apiHost;
     }
 
@@ -100,7 +98,7 @@ chrome.readingList.onEntryAdded.addListener(async (entry) => {
     await processReadingListItem(entry);
 });
 
-// Chrome extension local UI
+// open Chrome extension local UI
 chrome.action.onClicked.addListener(() => {
     chrome.tabs.create({ url: chrome.runtime.getURL('index.html'), pinned: true });
 });

@@ -1,6 +1,14 @@
-const apiHost = 'http://127.0.0.1:5000';
+const getApiHost = async () => {
+    const apiHost = await chrome.storage.sync.get('kms.apihost');
+    if (apiHost.length !== undefined) {
+        return apiHost;
+    }
 
-const init = () => {
+    return 'http://127.0.0.1:5000';
+}
+
+const init = async () => {
+    const apiHost = await getApiHost();
     Smart('#table', class {
         get properties() {
             return {
