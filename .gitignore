@@ -1,0 +1,12 @@
+.venv
+__pycache__
+
+
+# assorted output directories
+chrome_extension/.nyc_output
+chrome_extension/node_modules/**
+chrome_extension/dist
+chrome_extension/knowmyself
+
+# firefox output
+chrome_extension/release.zip

@@ -1,0 +1,33 @@
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="smart-webcomponents.css" />
+
+  <script src="app.js"></script>
+  <script type="module" src="smart-webcomponents.js"></script>
+
+  <style>
+#summary {
+  font-size: 1.5rem;
+}
+  </style>
+</head>
+
+<body>
+  <h1>Mynd Myself</h1>
+
+  <smart-table id="table">
+  </smart-table>
+</body>
+
+<dialog id="summaryDialog">
+  <div>
+    <h2>Document Summary</h2>
+    <h4 id="dialog_url"></h4>
+    <button id="open" type="submit">Open URL</button>
+    <button id="cancel" type="cancel">Close</button>
+  </div>
+  <span id="summary"></span>
+</dialog>
+
+</html>

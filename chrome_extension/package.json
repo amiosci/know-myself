@@ -1,0 +1,67 @@
+{
+    "name": "kms-chrome-extension",
+    "version": "0.1.0",
+    "author": "Brandon Amiosci <brandon@amiosci.com>",
+    "devDependencies": {
+        "extension-cli": "^1.2.4"
+    },
+    "dependencies": {
+        "lit": "^3.1.0",
+        "smart-webcomponents-community": "^17.0.3"
+    },
+    "babel": {
+        "presets": [
+            "@babel/preset-env"
+        ]
+    },
+    "eslintIgnore": [
+        "test/**/*"
+    ],
+    "scripts": {
+        "start": "xt-build -e dev -w",
+        "start:firefox": "xt-build -e dev -p firefox -w",
+        "build": "xt-build -e prod",
+        "build:firefox": "xt-build -e prod -p firefox",
+        "clean": "xt-clean",
+        "docs": "xt-docs",
+        "test": "xt-test",
+        "coverage": "nyc --reporter=lcov npm run test"
+    },
+    "xtbuild": {
+        "commands": "cp -r node_modules/smart-webcomponents-community/source/styles/font dist",
+        "scss_bundles": [
+            {
+                "name": "smart-webcomponents",
+                "src": "node_modules/smart-webcomponents-community/source/styles/smart.default.css"
+            }
+        ],
+        "js_bundles": [
+            {
+                "name": "smart-webcomponents",
+                "src": [
+                    "node_modules/smart-webcomponents-community/source/modules/**/*.js"
+                ]
+            },
+            {
+                "name": "app",
+                "src": "./src/app/**/*.js"
+            },
+            {
+                "name": "popup",
+                "src": "./src/popup/**/*.js"
+            },
+            {
+                "name": "service_worker",
+                "src": "./src/service_worker/**/*.js"
+            }
+        ]
+    },
+    "xtdocs": {
+        "source": {
+            "include": [
+                "README.md",
+                "src"
+            ]
+        }
+    }
+}
