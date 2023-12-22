@@ -1,3 +1,4 @@
+import os
 from langchain.chains.summarize import load_summarize_chain
 from langchain.prompts import PromptTemplate
 from langchain.llms import Ollama
@@ -8,7 +9,7 @@ from langchain.docstore.document import Document
 def _llm(**kwargs):
     return Ollama(
         base_url=kwargs.pop("base_url", "http://localhost:11434"),
-        model=kwargs.pop("model", "mistral"),
+        model=kwargs.pop("model", os.environ.get('KMS_OLLAMA_MODEL', 'mistral')),
         verbose=kwargs.pop("verbose", False),
         temperature=kwargs.pop("temperature", 0.0),
         **kwargs
