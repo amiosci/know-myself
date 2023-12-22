@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS genai.process_tasks (
     hash char(64),
     url text,
     task_id text,
+    status char(20),
     primary key(hash, task_id)
 );
 

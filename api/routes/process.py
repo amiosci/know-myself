@@ -23,8 +23,12 @@ def register_routes(app: Flask):
     @app.get("/process")
     def list_registrations():
         return [
-            {"url": url, "hash": hash, "has_summary": has_summary}
-            for hash, url, has_summary in persist.get_processing_registrations()
+            {
+                "url": registration.url,
+                "hash": registration.hash,
+                "has_summary": registration.has_summary,
+            }
+            for registration in persist.get_processing_registrations()
         ]
 
     @app.post("/process")
@@ -40,9 +44,12 @@ def register_routes(app: Flask):
         # use target URL to dedupe against requests with fragment/query changes
         process_request = flask_celery.process_content.delay(
             target_url_hash, target_url
-        ) # type: ignore
-        persist.register_processing_action(
-            target_url_hash, target_url, process_request.id
+        )  # type: ignore
+        persist.update_processing_action(
+            target_url_hash,
+            target_url,
+            process_request.id,
+            "PENDING",
         )
 
         return {"result_id": process_request.id, "hash": target_url_hash}
@@ -51,9 +58,11 @@ def register_routes(app: Flask):
     def get_processing_result_content(hash: str):
         value = {}
         process_result = None
+        task_id = None
 
-        task_id = persist.get_processing_registration(hash)
-        if task_id:
+        registration = persist.get_processing_registration(hash)
+        if registration is not None:
+            task_id = registration.task_id
             process_result = persist.get_task_result(task_id)
             if process_result == "SUCCESS":
                 request_body = GetProcessingResultsContentRequest(**request.json)
