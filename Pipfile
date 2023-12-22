@@ -1,0 +1,31 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+arxiv = "==2.0.0"
+celery = "==5.3.6"
+flask = "==3.0.0"
+flask-cors = "==4.0.0"
+httpcore = "==1.0.2"
+httptools = "==0.6.1"
+httpx = "==0.25.2"
+langchain = "==0.0.352"
+langchain-experimental = "==0.0.47"
+psycopg2-binary = "==2.9.9"
+pydantic = "==2.4.2"
+wikipedia = "==1.4.0"
+unstructured = "==0.11.4"
+selenium = "==4.15.2"
+pymupdf = "==1.23.6"
+pymupdfb = "==1.23.6"
+nltk = "==3.8.1"
+dataclasses-json = "==0.6.2"
+redis = "==5.0.1"
+html2text = "==2020.1.16"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

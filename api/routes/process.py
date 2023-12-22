@@ -16,7 +16,7 @@ class GenerateSummaryRequest:
     url: str
     title: str
 
-    force_process: bool = False
+    force_process: bool = True
 
 
 def register_routes(app: Flask):
@@ -55,7 +55,7 @@ def register_routes(app: Flask):
 
     @app.post("/process")
     def register_url():
-        request_body = GenerateSummaryRequest(**request.json)
+        request_body = GenerateSummaryRequest(**request.json) # type: ignore
         target_url = url_tools.extract_target_url(request_body.url)
         target_url_hash = url_tools.hash_url(target_url)
         registration = persist.get_processing_registration(target_url_hash)
@@ -87,7 +87,7 @@ def register_routes(app: Flask):
             task_id = registration.task_id
             process_result = persist.get_task_result(task_id)
             if process_result == "SUCCESS":
-                request_body = GetProcessingResultsContentRequest(**request.json)
+                request_body = GetProcessingResultsContentRequest(**request.json) # type: ignore
                 if request_body.summary:
                     value["summary"] = persist.get_summary(hash)
         return {
