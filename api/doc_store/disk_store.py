@@ -2,7 +2,7 @@ import dataclasses
 import json
 import os
 from langchain.docstore.document import Document
-from typing import Any, Callable
+from typing import Callable
 
 
 def _generate_path_components(hash: str, component_length: int = 12) -> list[str]:
@@ -18,117 +18,55 @@ def _generate_path_components(hash: str, component_length: int = 12) -> list[str
     return components
 
 
-def _save_content(content_file: str, content: str):
-    with open(content_file, "w+") as c:
-        c.write(content)
-
-
-def _save_metadata(metadata_file: str, metadata: dict[str, Any]):
-    with open(metadata_file, "w+") as c:
-        c.write(json.dumps(metadata))
-
-
-def _load_content(content_file: str) -> str:
-    with open(content_file, "r") as c:
-        return c.read()
-
-
-def _load_metadata(metadata_file: str) -> dict[str, Any]:
-    with open(metadata_file, "r") as m:
-        return json.load(m)
-
-
-def _files_with_prefix(base_dir: str, prefix: str) -> list[str]:
-    if not os.path.exists(base_dir):
-        return []
-    return [name for name in os.listdir(base_dir) if name.startswith(prefix)]
-
-
 @dataclasses.dataclass
 class DiskStore:
     root_directory: str
     logging_func: Callable[[str], None] = print
 
     def has_document_content(self, hash: str) -> bool:
-        hash_basedir, content_file_name = self._hash_pathspec(hash)
-        prefix = f"{content_file_name}."
-        content_files = _files_with_prefix(hash_basedir, prefix)
-        self.logging_func(f"Document count {len(content_files)} for {hash}")
-
-        return len(content_files) > 0
+        content_path = self._hash_path(hash)
+        return os.path.exists(content_path)
 
     def save_document_content(self, hash: str, documents: list[Document]):
         self.logging_func(f"Saving {hash}")
-        content_file_directory, content_file_name = self._hash_pathspec(hash)
+        content_path = self._hash_path(hash)
 
-        os.makedirs(content_file_directory, exist_ok=True)
-        for i, doc in enumerate(documents):
-            content_part_filename = f"{content_file_name}.{i}"
-            content_part_filepath = os.path.join(
-                content_file_directory, content_part_filename
-            )
-            self.logging_func(
-                f"Saving document {os.path.abspath(content_part_filepath)}"
-            )
-            _save_content(
-                content_part_filepath,
-                doc.page_content,
-            )
+        os.makedirs(os.path.dirname(content_path), exist_ok=True)
 
-            if doc.metadata:
-                content_part_metadata_filename = f"{content_file_name}.{i}.meta"
-                _save_metadata(
-                    os.path.join(
-                        content_file_directory, content_part_metadata_filename
-                    ),
-                    doc.metadata,
-                )
+        with open(content_path, "w+") as f:
+            self.logging_func(f"Saving document {os.path.abspath(content_path)}")
+            document_dict = {}
+            for i, doc in enumerate(documents):
+                document_dict[i] = {"c": doc.page_content}
+                if doc.metadata:
+                    document_dict[i]["m"] = doc.metadata
+
+            json.dump(document_dict, f)
 
     def restore_document_content(self, hash: str) -> list[Document]:
-        hash_basedir, content_file_name = self._hash_pathspec(hash)
-        prefix = f"{content_file_name}."
-        content_files = _files_with_prefix(hash_basedir, prefix)
-        # ensure documents are ordered correctly for downstream processing
-        segments = list({x.split(".")[1] for x in content_files})
-        self.logging_func(f"Loading {len(segments)} document segments for {hash}")
+        self.logging_func(f"Loading document for {hash}")
+        content_path = self._hash_path(hash)
 
-        return [self._load_document(hash, int(i)) for i in segments]
+        with open(content_path, "r") as f:
+            doc_content = json.load(f)
+
+        sorted_doc_content = sorted(doc_content.items())
+        return [
+            Document(
+                page_content=doc["c"],
+                metadata=doc.get("m", {}),
+            )
+            for _, doc in sorted_doc_content
+        ]
 
     def delete_document_content(self, hash: str):
-        hash_basedir, content_file_name = self._hash_pathspec(hash)
-        prefix = f"{content_file_name}."
-        content_files = _files_with_prefix(hash_basedir, prefix)
-        self.logging_func(f"Deleting {len(content_files)} document segments for {hash}")
+        content_path = self._hash_path(hash)
+        os.remove(content_path)
 
-        for content_file in content_files:
-            os.remove(os.path.join(hash_basedir, content_file))
+        os.removedirs(os.path.dirname(content_path))
 
-        # clean directory tree until populated parent
-        os.removedirs(hash_basedir)
-
-    def _hash_pathspec(self, hash: str) -> tuple[str, str]:
-        hash_path_components = _generate_path_components(hash)
-        content_filename = hash_path_components.pop(-1)
-        return (
-            os.path.join(self.root_directory, *hash_path_components),
-            content_filename,
-        )
-
-    def _load_document(self, hash: str, segment: int) -> Document:
-        store_basedir, content_file_name = self._hash_pathspec(hash)
-
-        content_part_filename = f"{content_file_name}.{segment}"
-        content_filepath = os.path.join(store_basedir, content_part_filename)
-        content = _load_content(content_filepath)
-
-        content_part_metadata_filename = f"{content_file_name}.{segment}.meta"
-        metadata_filepath = os.path.join(store_basedir, content_part_metadata_filename)
-        if os.path.exists(metadata_filepath):
-            metadata = _load_metadata(metadata_filepath)
-        else:
-            metadata = {}
-
-        return Document(page_content=content, metadata=metadata)
+    def _hash_path(self, hash: str) -> str:
+        return os.path.join(self.root_directory, *_generate_path_components(hash))
 
 
 def default_store(**kwargs):

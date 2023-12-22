@@ -34,17 +34,20 @@
 </head>
 
 <body class="viewport">
+  <!-- top right floating toolbar -->
   <div class="floating-toolbar">
     <sl-icon-button class="floating-toolbar-open-drawer" name="list" label="Settings"></sl-icon-button>
   </div>
-  <sl-drawer label="KMS" class="sidebar-drawer">
 
+  <!-- right-side drawer -->
+  <sl-drawer label="KMS" class="sidebar-drawer">
     <sl-button class="settings-open" variant="default">
       <sl-icon slot="prefix" name="gear"></sl-icon>
       Open Settings
     </sl-button>
   </sl-drawer>
 
+  <!-- Main content -->
   <div>
     <sl-tab-group>
       <sl-tab slot="nav" panel="results">Results</sl-tab>
