@@ -3,7 +3,7 @@ from kor import extract_from_documents, from_pydantic, create_extraction_chain
 from langchain.docstore.document import Document
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
-import utils
+from analyzers import utils
 
 
 class EntityRelationSchema(BaseModel):

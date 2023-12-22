@@ -4,6 +4,8 @@ import os
 from langchain.docstore.document import Document
 from typing import Callable
 
+from analyzers import extraction
+
 
 def _generate_path_components(hash: str, component_length: int = 12) -> list[str]:
     components = []
@@ -64,6 +66,24 @@ class DiskStore:
         os.remove(content_path)
 
         os.removedirs(os.path.dirname(content_path))
+
+    def has_entity_relations(self, hash: str) -> bool:
+        content_path = self._hash_path(hash)
+        entity_relations_path = f"{content_path}.entity_relations"
+        return os.path.exists(entity_relations_path)
+
+    def save_entity_relations(
+        self,
+        hash: str,
+        entity_relations: list[extraction.EntityRelationSchema],
+    ):
+        content_path = self._hash_path(hash)
+        entity_relations_path = f"{content_path}.entity_relations"
+        if os.path.exists(entity_relations_path):
+            return
+
+        with open(content_path, "w+") as f:
+            json.dump(entity_relations, f)
 
     def _hash_path(self, hash: str) -> str:
         return os.path.join(self.root_directory, *_generate_path_components(hash))

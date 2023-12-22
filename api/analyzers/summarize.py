@@ -3,7 +3,7 @@ from langchain.prompts import PromptTemplate
 
 from langchain.docstore.document import Document
 
-import utils
+from analyzers import utils
 
 
 def summarize_document(texts: list[Document]) -> str:

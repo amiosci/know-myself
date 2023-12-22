@@ -29,6 +29,7 @@ def process_content(self, hash: str, url: str):
     group(
         [
             analyzer_tasks.summarize_content.si(hash),  # type: ignore
+            analyzer_tasks.extract_entity_relations.si(hash),  # type: ignore
         ]
     ).apply_async()
 
