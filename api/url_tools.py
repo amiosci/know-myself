@@ -11,13 +11,15 @@ def hash_url(url: str) -> str:
 
 def extract_target_url(url: str):
     parsed_url = urlparse(url)
-
     cdn_netlocs = ["cdn.ampproject.org"]
     is_cdn = any(x in parsed_url.netloc for x in cdn_netlocs)
     if is_cdn:
         return f"{parsed_url.scheme}://{parsed_url.path[5:]}"
 
-    return f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    calculated_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    if parsed_url.query:
+        calculated_url += f"?{parsed_url.query}"
+    return calculated_url
 
 
 if __name__ == "__main__":
@@ -32,3 +34,10 @@ if __name__ == "__main__":
 
     non_cdn_url = "https://docs.python.org/3/library/urllib.parse.html"
     assert non_cdn_url == extract_target_url(non_cdn_url)
+
+    no_fragment_query_url = "https://news.ycombinator.com/item?id=38724665"
+    assert no_fragment_query_url == extract_target_url(no_fragment_query_url)
+
+    assert no_fragment_query_url == extract_target_url(
+        no_fragment_query_url + "#fragment"
+    )
