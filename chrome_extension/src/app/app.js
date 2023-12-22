@@ -43,7 +43,7 @@ const init = async () => {
                 dataSource: new Smart.DataAdapter({
                     dataSource: {
                         method: 'GET',
-                        url: `${apiHost}/tasks`,
+                        url: `${apiHost}/tasks?filter=complete`,
                         async: false,
                         timeout: null
                     },

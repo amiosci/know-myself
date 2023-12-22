@@ -45,7 +45,7 @@ def get_summary(hash: str) -> str | None:
             curs.execute("SELECT summary from genai.summaries where hash = %s", (hash,))
             row = curs.fetchone()
             if row is not None:
-                return row[0]
+                return str(row[0]).strip()
 
             return None
 
@@ -127,10 +127,10 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
             )
             return [
                 ProcessingRegistration(
-                    hash=str(row[0]),
-                    url=str(row[1]),
-                    task_id=str(row[2]),
-                    status=str(row[3]),
+                    hash=str(row[0]).strip(),
+                    url=str(row[1]).strip(),
+                    task_id=str(row[2]).strip(),
+                    status=str(row[3]).strip(),
                     has_summary=bool(row[4]),
                 )
                 for row in curs
@@ -148,9 +148,9 @@ def get_processing_registration(hash: str) -> ProcessingRegistration | None:
             if row is not None:
                 return ProcessingRegistration(
                     hash=hash,
-                    url=str(row[0]),
-                    task_id=str(row[1]),
-                    status=str(row[2]),
+                    url=str(row[0]).strip(),
+                    task_id=str(row[1]).strip(),
+                    status=str(row[2]).strip(),
                 )
 
             return None
