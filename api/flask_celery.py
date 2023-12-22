@@ -5,11 +5,13 @@ from analyzers import tasks as analyzer_tasks
 from doc_store import disk_store
 from doc_store import doc_loader
 
+from services import persist
+
 logger = get_logger(__name__)
 
 
-@shared_task(trail=True)
-def process_content(hash: str, url: str):
+@shared_task(trail=True, bind=True)
+def process_content(self, hash: str, url: str):
     logger.info(f"[Flask Shim] Processing started for {url}")
 
     store = disk_store.default_store(logging_func=logger.info)
@@ -26,9 +28,11 @@ def process_content(hash: str, url: str):
     # register all tasks to run in group
     group(
         [
-            analyzer_tasks.summarize_content.si(hash), # type: ignore
+            analyzer_tasks.summarize_content.si(hash),  # type: ignore
         ]
     ).apply_async()
+
+    persist.update_processing_action(hash, url, self.request.id, "COMPLETE")
 
     logger.info(f"[Flask Shim] Tasks requested for {url}")
     logger.info(f"[Flask Shim] Processing completed for {url}")

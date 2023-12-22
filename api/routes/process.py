@@ -20,6 +20,17 @@ class GenerateSummaryRequest:
 
 
 def register_routes(app: Flask):
+    @app.get("/tasks")
+    def list_registration_states():
+        return [
+            {
+                "url": registration.url,
+                "hash": registration.hash,
+                "status": registration.status
+            }
+            for registration in persist.get_processing_registrations()
+        ]
+    
     @app.get("/process")
     def list_registrations():
         return [

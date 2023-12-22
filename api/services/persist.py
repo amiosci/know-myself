@@ -95,8 +95,17 @@ def update_processing_action(hash: str, url: str, task_id: str, status: str):
         with conn.cursor() as curs:
             curs.execute(
                 "INSERT INTO genai.process_tasks (hash, url, task_id, status) VALUES (%s, %s, %s, %s) "
-                "ON CONFLICT(hash) DO UPDATE SET status = EXCLUDED.status",
+                "ON CONFLICT(hash, task_id) DO UPDATE SET status = EXCLUDED.status",
                 ((hash, url, task_id, status)),
+            )
+
+
+def update_processing_action_state(hash: str, task_id: str, status: str):
+    with get_connection() as conn:
+        with conn.cursor() as curs:
+            curs.execute(
+                "UPDATE genai.process_tasks set status=%s where hash=%s and task_id=%s",
+                ((status, hash, task_id)),
             )
 
 
@@ -120,7 +129,7 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
                 ProcessingRegistration(
                     hash=str(row[0]),
                     url=str(row[1]),
-                    task_id=(str(row[2])),
+                    task_id=str(row[2]),
                     status=str(row[3]),
                     has_summary=bool(row[4]),
                 )
