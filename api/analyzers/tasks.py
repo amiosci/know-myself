@@ -32,16 +32,19 @@ def _run_celery_analyzer_task(
         logger.info(f"[{task_name}] Skipping - No content found: {hash}")
         return
 
-    logger.info(f"[{task_name}] Document size: {len(docs)}")
-    summary_text = run_analyzer(docs)
+    try:
+        logger.info(f"[{task_name}] Document size: {len(docs)}")
+        summary_text = run_analyzer(docs)
 
-    if summary_text:
-        logger.info(f"[{task_name}] Saving: {hash}")
-        on_generated(hash, summary_text)
-    else:
-        logger.info(f"[{task_name}] Nothing generated for {hash}")
+        if summary_text:
+            logger.info(f"[{task_name}] Saving: {hash}")
+            on_generated(hash, summary_text)
+        else:
+            logger.info(f"[{task_name}] Nothing generated for {hash}")
 
-    persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
+        persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
+    except:
+        persist.update_processing_action_state(hash, task_id, task_name, "FAILED")
 
 
 @shared_task(bind=True, trail=True)
