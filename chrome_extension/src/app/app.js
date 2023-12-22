@@ -78,6 +78,10 @@ const init = async () => {
     const summaryElement = detailsDialog.querySelector('.document-summary-content');
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
+    detailsDialog.addEventListener('sl-after-hide', () => {
+        summaryElement.hide();
+    });
+
     const newWindowButton = detailsDialog.querySelector('.new-window');
     newWindowButton.addEventListener('click', () => {
         detailsDialog.hide();
