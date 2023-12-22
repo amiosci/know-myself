@@ -78,6 +78,7 @@ const init = async () => {
     const summaryElement = detailsDialog.querySelector('.document-summary-content');
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
+    // reset dialog elements after animations finalize
     detailsDialog.addEventListener('sl-after-hide', () => {
         summaryElement.hide();
     });

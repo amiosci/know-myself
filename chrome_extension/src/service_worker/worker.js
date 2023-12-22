@@ -42,7 +42,6 @@ chrome.runtime.onInstalled.addListener(async () => {
     });
 
     chrome.contextMenus.onClicked.addListener(async ({ frameUrl }, { title }) => {
-        debugger;
         await processReadingListItem({
             url: frameUrl,
             title: title
