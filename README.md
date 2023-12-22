@@ -51,6 +51,9 @@ This will start a locally backed up Postgres and Redis server.
 
 #### Run API server
 
+Configure virtualenv
+`PIPENV_VENV_IN_PROJECT=1 pipenv install`
+
 `flask --app api/flask_app.py run`
 
 This will start the local API that is used by the Web Browser extension.
