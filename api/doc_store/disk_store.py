@@ -116,5 +116,4 @@ if __name__ == "__main__":
             print(doc)
             assert docs[i] == doc
     finally:
-        pass
         store.delete_document_content(hash)
