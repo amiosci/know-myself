@@ -13,6 +13,18 @@
     .summary-content {
       font-size: 1.2rem;
     }
+
+    .floating-toolbar {
+      display: flex;
+      position: fixed;
+      top: 0;
+      right: 1rem;
+      z-index: 10;
+      border-bottom-left-radius: calc(var(--docs-border-radius) * 2);
+      border-bottom-right-radius: calc(var(--docs-border-radius) * 2);
+      padding: 0.125rem 0.25rem;
+      font-size: 2.5rem;
+    }
   </style>
 
   <meta charset="utf-8">
@@ -22,17 +34,38 @@
 </head>
 
 <body class="viewport">
+  <div class="floating-toolbar">
+    <sl-icon-button class="floating-toolbar-open-drawer" name="list" label="Settings"></sl-icon-button>
+  </div>
+  <sl-drawer label="KMS" class="sidebar-drawer">
+
+    <sl-button class="settings-open" variant="default">
+      <sl-icon slot="prefix" name="gear"></sl-icon>
+      Open Settings
+    </sl-button>
+  </sl-drawer>
+
   <div>
-    <sl-button class="settings-open">Open Settings</sl-button>
-    <smart-table page-size="25" column-menu paging filtering sortable id="table">
-    </smart-table>
+    <sl-tab-group>
+      <sl-tab slot="nav" panel="results">Results</sl-tab>
+      <sl-tab slot="nav" panel="tasks">Processing Queue</sl-tab>
+
+      <sl-tab-panel name="results">
+        <smart-table page-size="10" column-menu paging filtering sortable class="results-table">
+        </smart-table>
+      </sl-tab-panel>
+      <sl-tab-panel name="tasks">
+        <smart-table page-size="10" column-menu paging filtering sortable class="tasks-table">
+        </smart-table>
+      </sl-tab-panel>
+    </sl-tab-group>
   </div>
 </body>
 
 <!-- View Document Summary Dialog -->
-<sl-dialog label="Document Summary" class="summary-dialog" style="--width: 50vw;">
-  <h4 class="summary-dialog-url"></h4>
-  <span class="summary-content"></span>
+<sl-dialog label="Document Details" class="document-dialog" style="--width: 50vw;">
+  <h4 class="document-dialog-url"></h4>
+  <sl-details class="document-summary-content" summary="Summary"></sl-details>
 
   <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
 </sl-dialog>

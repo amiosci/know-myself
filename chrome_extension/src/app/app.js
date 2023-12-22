@@ -5,7 +5,9 @@ const getApiHost = async () => {
 
 const init = async () => {
     const apiHost = await getApiHost();
-    Smart('#table', class {
+
+    const resultsTable = document.querySelector('.results-table');
+    Smart('.results-table', class {
         get properties() {
             return {
                 sortMode: 'one',
@@ -33,19 +35,56 @@ const init = async () => {
         }
     });
 
-    const table = document.querySelector('#table');
+    const tasksTable = document.querySelector('.tasks-table');
+    Smart('.tasks-table', class {
+        get properties() {
+            return {
+                sortMode: 'one',
+                dataSource: new Smart.DataAdapter({
+                    dataSource: {
+                        method: 'GET',
+                        url: `${apiHost}/tasks`,
+                        async: false,
+                        timeout: null
+                    },
+                    dataSourceType: 'json',
+                    dataFields: [
+                        'url: string',
+                        'hash: string',
+                        'status: string'
+                    ]
+                }),
+                editing: false,
+                columns: [
+                    { label: 'URL', dataField: 'url', dataType: 'string', allowEdit: false },
+                    { label: 'Current status', dataField: 'status', dataType: 'string', allowEdit: false },
+                ]
+            };
+        }
+    });
+    tasksTable.addEventListener('cellClick', async (e) => {
+        const rowHash = e.detail.row.hash;
+        const rowUrl = e.detail.row.url;
+        const rowStatus = e.detail.row.status;
+    });
 
-    const dialog = document.querySelector('.summary-dialog');
-    const summaryElement = dialog.querySelector('.summary-content');
-    const urlElement = dialog.querySelector('.summary-dialog-url');
+    const drawerElement = document.querySelector('.sidebar-drawer');
+    const openDrawerButton = document.querySelector('.floating-toolbar-open-drawer');
+    openDrawerButton.addEventListener('click', () => {
+        drawerElement.show();
+    });
 
-    const newWindowButton = dialog.querySelector('.new-window');
+    const detailsDialog = document.querySelector('.document-dialog');
+    const summaryElement = detailsDialog.querySelector('.document-summary-content');
+    const urlElement = detailsDialog.querySelector('.document-dialog-url');
+
+    const newWindowButton = detailsDialog.querySelector('.new-window');
     newWindowButton.addEventListener('click', () => {
-        dialog.hide();
+        detailsDialog.hide();
         window.open(urlElement.textContent);
     });
 
-    table.addEventListener('cellClick', async (e) => {
+    resultsTable.addEventListener('cellClick', async (e) => {
         const rowHash = e.detail.row.hash;
         const rowUrl = e.detail.row.url;
 
@@ -58,7 +97,7 @@ const init = async () => {
         summaryElement.textContent = summaryResponse.summary;
         urlElement.textContent = rowUrl;
 
-        dialog.show();
+        detailsDialog.show();
     });
 
     // settings page
