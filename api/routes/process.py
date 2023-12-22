@@ -23,7 +23,7 @@ def register_routes(app: Flask):
     @app.get("/tasks")
     def list_registration_states():
         filters = list(
-            map(lambda x: x.upper(), request.args.getlist("filter", type=str))
+            map(lambda x: x.upper().strip(), request.args.getlist("filter", type=str))
         )
         registrations = persist.get_processing_registrations()
         if filters:
@@ -43,7 +43,7 @@ def register_routes(app: Flask):
         ]
 
     @app.get("/process")
-    def list_registrations():
+    def list_registration_results():
         return [
             {
                 "url": registration.url,
