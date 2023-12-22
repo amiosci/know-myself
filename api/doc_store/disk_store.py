@@ -81,9 +81,10 @@ class DiskStore:
         entity_relations_path = f"{content_path}.entity_relations"
         if os.path.exists(entity_relations_path):
             return
-
+        
+        print(f'saving {len(entity_relations)} relations')
         with open(content_path, "w+") as f:
-            json.dump(entity_relations, f)
+            json.dump([x.model_dump() for x in entity_relations], f)
 
     def _hash_path(self, hash: str) -> str:
         return os.path.join(self.root_directory, *_generate_path_components(hash))

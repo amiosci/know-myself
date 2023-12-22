@@ -25,7 +25,7 @@ def _run_celery_analyzer_task(
         logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
         return
 
-    persist.update_processing_action_state(hash, task_id, "STARTED")
+    persist.update_processing_action_state(hash, task_id, task_name, "STARTED")
     store = disk_store.default_store(logging_func=logger.info)
     docs = store.restore_document_content(hash)
     if len(docs) == 0:
@@ -41,7 +41,7 @@ def _run_celery_analyzer_task(
     else:
         logger.info(f"[{task_name}] Nothing generated for {hash}")
 
-    persist.update_processing_action_state(hash, task_id, "COMPLETE")
+    persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
 
 
 @shared_task(bind=True, trail=True)
@@ -64,7 +64,7 @@ def extract_entity_relations(self, hash: str):
         hash,
         self.request.id,
         "Extract Relations",
-        store.has_document_content,
+        store.has_entity_relations,
         extraction.extract_entity_relations,
         store.save_entity_relations,
     )

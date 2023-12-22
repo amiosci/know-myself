@@ -100,12 +100,12 @@ def update_processing_action(hash: str, url: str, task_id: str, status: str):
             )
 
 
-def update_processing_action_state(hash: str, task_id: str, status: str):
+def update_processing_action_state(hash: str, task_id: str, task_type: str, status: str):
     with get_connection() as conn:
         with conn.cursor() as curs:
             curs.execute(
-                "UPDATE genai.process_tasks set status=%s where hash=%s and task_id=%s",
-                ((status, hash, task_id)),
+                "UPDATE genai.process_tasks set status=%s, task_name=%s where hash=%s and task_id=%s",
+                ((status, task_type, hash, task_id)),
             )
 
 
@@ -114,6 +114,7 @@ class ProcessingRegistration:
     hash: str
     url: str
     task_id: str
+    task_name: str
     status: str
     has_summary: bool = False
 
@@ -122,7 +123,9 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
     with get_connection() as conn:
         with conn.cursor() as curs:
             curs.execute(
-                "SELECT t.hash, t.url, t.task_id, t.status, EXISTS(select 1 from genai.summaries where hash=t.hash) "
+                "SELECT t.hash, t.url, t.task_id, t.status, "
+                "EXISTS(select 1 from genai.summaries where hash=t.hash), "
+                "t.task_name "
                 "from genai.process_tasks as t",
             )
             return [
@@ -130,8 +133,9 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
                     hash=str(row[0]).strip(),
                     url=str(row[1]).strip(),
                     task_id=str(row[2]).strip(),
-                    status=str(row[3]).strip(),
+                    status=str(row[3] if row[3] else '').strip(),
                     has_summary=bool(row[4]),
+                    task_name=str(row[5]).strip(),
                 )
                 for row in curs
             ]
@@ -141,7 +145,7 @@ def get_processing_registration(hash: str) -> ProcessingRegistration | None:
     with get_connection() as conn:
         with conn.cursor() as curs:
             curs.execute(
-                "SELECT url, task_id, status from genai.process_tasks where hash = %s",
+                "SELECT url, task_id, status, task_name from genai.process_tasks where hash = %s",
                 (hash,),
             )
             row = curs.fetchone()
@@ -151,6 +155,7 @@ def get_processing_registration(hash: str) -> ProcessingRegistration | None:
                     url=str(row[0]).strip(),
                     task_id=str(row[1]).strip(),
                     status=str(row[2]).strip(),
+                    task_name=str(row[3]).strip(),
                 )
 
             return None

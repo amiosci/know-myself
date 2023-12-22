@@ -16,7 +16,7 @@ class GenerateSummaryRequest:
     url: str
     title: str
 
-    force_process: bool = False
+    force_process: bool = True
 
 
 def register_routes(app: Flask):
@@ -36,10 +36,12 @@ def register_routes(app: Flask):
             {
                 "url": registration.url,
                 "hash": registration.hash,
+                "task_name": registration.task_name,
                 "status": registration.status,
             }
             for registration in registrations
-            if registration.status != "None"
+            # TODO: remove after resetting the database
+            if registration.status
         ]
 
     @app.get("/process")

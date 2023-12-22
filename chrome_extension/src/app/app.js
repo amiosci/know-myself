@@ -51,12 +51,14 @@ const init = async () => {
                     dataFields: [
                         'url: string',
                         'hash: string',
+                        'task_name: string',
                         'status: string'
                     ]
                 }),
                 editing: false,
                 columns: [
                     { label: 'URL', dataField: 'url', dataType: 'string', allowEdit: false },
+                    { label: 'Task Name', dataField: 'task_name', dataType: 'string', allowEdit: false },
                     { label: 'Current status', dataField: 'status', dataType: 'string', allowEdit: false },
                 ]
             };
