@@ -24,6 +24,9 @@ nltk = "==3.8.1"
 dataclasses-json = "==0.6.2"
 redis = "==5.0.1"
 html2text = "==2020.1.16"
+tiktoken = "*"
+kor = "*"
+markdownify = "*"
 
 [dev-packages]
 
