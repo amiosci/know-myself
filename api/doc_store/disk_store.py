@@ -10,7 +10,7 @@ def _generate_path_components(hash: str, component_length: int = 12) -> list[str
     low_i = -2
     high_i = 0
     modifier = 2
-    for i in range(max(component_length, 1)):
+    for _ in range(max(component_length, 1)):
         low_i += modifier
         high_i += modifier
         components.append(hash[low_i:high_i])
