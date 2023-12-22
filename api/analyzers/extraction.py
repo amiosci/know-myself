@@ -9,9 +9,20 @@ import utils
 class EntityRelationSchema(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    entity: str = Field(description="The name of the origin of the relationship")
-    target: str = Field(description="The name of the target of the relationship")
-    relationship: str = Field(description="The description of the relationship")
+    entity: str = Field(
+        repr=True,
+        description="The name of the origin of the relationship",
+    )
+
+    target: str = Field(
+        repr=True,
+        description="The name of the target of the relationship",
+    )
+
+    relationship: str = Field(
+        repr=True,
+        description="The description of the relationship",
+    )
 
     @field_validator("entity")
     @classmethod
@@ -91,7 +102,7 @@ def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]
                     "entity": "Disney",
                     "target": "Mineral King",
                     "relationship": "developed plans for a ski resort",
-                }
+                },
             ),
             (
                 "During the early to mid-1960s, Disney developed plans for a ski resort "
@@ -100,7 +111,7 @@ def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]
                     "entity": "Mineral King",
                     "target": "Sierra Nevada",
                     "relationship": "glacial valley in",
-                }
+                },
             ),
             (
                 "During the early to mid-1960s, Disney developed plans for a ski resort "
@@ -109,7 +120,7 @@ def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]
                     "entity": "Sierra Nevada",
                     "target": "California",
                     "relationship": "in",
-                }
+                },
             ),
         ],
         many=True,
