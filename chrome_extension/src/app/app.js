@@ -174,6 +174,8 @@ const init = async () => {
                 maxConnections = Math.max(nodeConnections, maxConnections);
             });
 
+            console.log(connectionMap);
+
             const nodeColorRange = BLUE.steps(RED, {
                 outputSpace: 'srgb',
                 // Add 1 to support nodes without connections
@@ -197,43 +199,42 @@ const init = async () => {
             const componentMinimumSize = 3;
             const componentNodes = connectedComponents(graph).filter(x => x.length >= componentMinimumSize);
             // tab mode
-            if (componentNodes.length > 1) {
-                const graphTabGroup = document.createElement('sl-tab-group');
-                graphTabGroup.setAttribute('placement', 'start');
+            const graphTabGroup = document.createElement('sl-tab-group');
+            graphTabGroup.setAttribute('placement', 'start');
 
-                let tabNumber = 0;
-                for (const component of componentNodes) {
-                    console.log(component);
+            let tabNumber = 0;
+            for (const component of componentNodes) {
+                const componentGraph = subgraph(graph, component);
+                component.sort((x, y) => (connectionMap[y] ?? 0) - (connectionMap[x] ?? 0));
+                const primaryNode = component[0];
 
-                    const graphTabElement = document.createElement('sl-tab');
-                    graphTabElement.setAttribute('slot', 'nav');
-                    graphTabElement.setAttribute('panel', tabNumber);
-                    graphTabElement.innerText = `Tab ${tabNumber}`;
+                const graphTabElement = document.createElement('sl-tab');
+                graphTabElement.setAttribute('slot', 'nav');
+                graphTabElement.setAttribute('panel', tabNumber);
+                graphTabElement.innerText = primaryNode;
 
-                    const graphTabContentElement = document.createElement('sl-tab-panel');
-                    graphTabContentElement.setAttribute('name', tabNumber);
+                const graphTabContentElement = document.createElement('sl-tab-panel');
+                graphTabContentElement.setAttribute('name', tabNumber);
 
-                    const graphElement = document.createElement('div');
-                    graphElement.classList.add('entity-graph');
+                const graphElement = document.createElement('div');
+                graphElement.classList.add('entity-graph');
 
-                    graphTabGroup.appendChild(graphTabContentElement);
-                    graphTabGroup.appendChild(graphTabElement);
-                    graphTabContentElement.appendChild(graphElement);
-                    tabNumber += 1;
+                graphTabGroup.appendChild(graphTabContentElement);
+                graphTabGroup.appendChild(graphTabElement);
+                graphTabContentElement.appendChild(graphElement);
+                tabNumber += 1;
 
-                    const componentGraph = subgraph(graph, component);
-                    renderers.push(new Sigma(componentGraph, graphElement, {
-                        nodeProgramClasses: {
-                        },
-                        edgeProgramClasses: {
-                        },
-                        allowInvalidContainer: true,
-                        renderEdgeLabels: true,
-                    }));
+                renderers.push(new Sigma(componentGraph, graphElement, {
+                    nodeProgramClasses: {
+                    },
+                    edgeProgramClasses: {
+                    },
+                    allowInvalidContainer: true,
+                    renderEdgeLabels: true,
+                }));
 
-                    const layout = new ForceSupervisor(componentGraph);
-                    layout.start();
-                }
+                const layout = new ForceSupervisor(componentGraph);
+                layout.start();
             }
 
             graphContainerElement.appendChild(graphTabGroup);
