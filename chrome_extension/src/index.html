@@ -2,14 +2,23 @@
 <html lang="en">
 
 <head>
+
   <link rel="stylesheet" type="text/css" href="smart-webcomponents.css" />
   <link rel="stylesheet" type="text/css" href="shoelace_dist/themes/light.css" />
 
-  <script type="module" src="shoelace.js" data-shoelace="shoelace_dist"></script>
-  <script type="module" src="smart-webcomponents.js"></script>
+  <script type="text/javascript" type="module" src="smart-webcomponents.js"></script>
+  <script type="text/javascript" type="module" src="vis-network.js"></script>
+  <script type="text/javascript" type="module" src="shoelace.js" data-shoelace="shoelace_dist"></script>
 
   <script type="module" src="app.js"></script>
+
   <style>
+    .entity-graph {
+      width: 600px;
+      height: 400px;
+      border: 1px solid lightgray;
+    }
+
     .summary-content {
       font-size: 1.2rem;
     }
@@ -69,7 +78,10 @@
 <sl-dialog label="Document Details" class="document-dialog" style="--width: 50vw;">
   <h4 class="document-dialog-url"></h4>
   <sl-details class="document-summary-content" summary="Summary"></sl-details>
-
+  <sl-details class="document-entities-content" summary="Extracted Entities">
+    <!-- Embedded graph -->
+    <div class="entity-graph"></div>
+  </sl-details>
   <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
 </sl-dialog>
 

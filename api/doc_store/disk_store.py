@@ -72,6 +72,12 @@ class DiskStore:
         entity_relations_path = f"{content_path}.entity_relations"
         return os.path.exists(entity_relations_path)
 
+    def load_entity_relations(self, hash: str) -> list[extraction.EntityRelationSchema]:
+        content_path = self._hash_path(hash)
+        entity_relations_path = f"{content_path}.entity_relations"
+        with open(entity_relations_path, "r") as f:
+            return [extraction.EntityRelationSchema(**x) for x in list(json.load(f))]
+
     def save_entity_relations(
         self,
         hash: str,
@@ -81,9 +87,9 @@ class DiskStore:
         entity_relations_path = f"{content_path}.entity_relations"
         if os.path.exists(entity_relations_path):
             return
-        
-        print(f'saving {len(entity_relations)} relations')
-        with open(content_path, "w+") as f:
+
+        print(f"saving {len(entity_relations)} relations")
+        with open(entity_relations_path, "w+") as f:
             json.dump([x.model_dump() for x in entity_relations], f)
 
     def _hash_path(self, hash: str) -> str:

@@ -1,3 +1,8 @@
+import Graph from "graphology";
+import Sigma from "sigma";
+import ForceSupervisor from "graphology-layout-force/worker";
+import getNodeProgramImage from "sigma/rendering/programs/node-image";
+
 const getApiHost = async () => {
     const apiHost = await chrome.storage.sync.get('kms.apihost');
     return apiHost['kms.apihost'] || 'http://127.0.0.1:5000';
@@ -11,6 +16,9 @@ const init = async () => {
         get properties() {
             return {
                 sortMode: 'one',
+                editing: true,
+                // selection: true,
+                keyboardNavigation: true,
                 dataSource: new Smart.DataAdapter({
                     dataSource: {
                         method: 'GET',
@@ -78,11 +86,26 @@ const init = async () => {
 
     const detailsDialog = document.querySelector('.document-dialog');
     const summaryElement = detailsDialog.querySelector('.document-summary-content');
+    const entitiesElement = detailsDialog.querySelector('.document-entities-content');
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
+    const RED = "#FA4F40";
+    const BLUE = "#727EE0";
+    const GREEN = "#5DB346";
+
+    const graphElement = document.querySelector('.entity-graph');
+    let renderer = null;
+
     // reset dialog elements after animations finalize
-    detailsDialog.addEventListener('sl-after-hide', () => {
+    detailsDialog.addEventListener('sl-after-hide', (event) => {
+        if (event.target !== detailsDialog) {
+            return;
+        }
+
+        renderer?.kill();
+        renderer = null;
         summaryElement.hide();
+        entitiesElement.hide();
     });
 
     const newWindowButton = detailsDialog.querySelector('.new-window');
@@ -101,6 +124,52 @@ const init = async () => {
 
         const summaryResponse = await getSummaryResponse.json();
 
+        const getEntitiesResponse = await fetch(`${apiHost}/entities/${rowHash}`, {
+            method: 'GET'
+        });
+
+        const graphData = await getEntitiesResponse.json();
+
+        const graph = new Graph({
+            multi: true,
+        });
+        const n = graphData.length;
+        for (const node of graphData) {
+            ['entity', 'target'].forEach((nodeProperty) => {
+                if (!graph.hasNode(node[nodeProperty])) {
+                    graph.addNode(node[nodeProperty], {
+                        size: 15,
+                        label: node[nodeProperty],
+                        color: RED,
+                    });
+                }
+            });
+
+            graph.addEdge(node['entity'], node['target'], {
+                type: "line",
+                label: node['relationship'],
+                size: 20,
+            });
+        }
+
+        graph.nodes().forEach((node, i) => {
+            const angle = (i * 2 * Math.PI) / graph.order;
+            graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
+            graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
+        });
+
+        const layout = new ForceSupervisor(graph);
+        renderer = new Sigma(graph, graphElement, {
+            nodeProgramClasses: {
+                image: getNodeProgramImage(),
+                // border: NodeProgramBorder,
+            },
+            allowInvalidContainer: true,
+            renderEdgeLabels: true,
+        });
+
+        layout.start();
+
         summaryElement.textContent = summaryResponse.summary;
         urlElement.textContent = rowUrl;
 
@@ -113,7 +182,7 @@ const init = async () => {
 
     const settingsSubmitButton = document.querySelector('.settings-submit');
     settingsSubmitButton.addEventListener('click', async () => {
-        await chrome.storage.sync.set({'kms.apihost': settingsApiHost.value});
+        await chrome.storage.sync.set({ 'kms.apihost': settingsApiHost.value });
 
         settingsDialog.hide();
     });

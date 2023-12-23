@@ -7,7 +7,11 @@
     "dependencies": {
         "@shoelace-style/shoelace": "^2.12.0",
         "bootstrap": "^5.3.2",
+        "graphology": "^0.25.4",
+        "graphology-layout-force": "^0.2.4",
+        "graphology-layout-forceatlas2": "^0.10.1",
         "lit": "^3.1.0",
+        "sigma": "^3.0.0-beta.4",
         "smart-webcomponents-community": "^17.0.3"
     },
     "babel": {
@@ -41,6 +45,12 @@
                 "name": "shoelace",
                 "src": [
                     "node_modules/@shoelace-style/shoelace/dist/shoelace.js"
+                ]
+            },
+            {
+                "name": "vis-network",
+                "src": [
+                    "node_modules/vis-network/standalone/umd/vis-network.min.js"
                 ]
             },
             {
