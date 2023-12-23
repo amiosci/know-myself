@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "813b5cdc53f50518a86e563531574288cdeee020e9df03da8203e57f2348235d"
+            "sha256": "23a1c4bc78247b3a44985a377ccc37479e260e2dbec45600d851fa9c0e9527a1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -138,6 +138,13 @@
             "index": "pypi",
             "markers": "python_version >= '3.7'",
             "version": "==2.0.0"
+        },
+        "asgiref": {
+            "hashes": [
+                "sha256:89b2ef2247e3b562a16eef663bc0e2e703ec6468e2fa8a5cd61cd449786d4f6e",
+                "sha256:9e0ce3aa93a819ba5b45120216b23878cf6e8525eb3848653452b4192b92afed"
+            ],
+            "version": "==3.7.2"
         },
         "attrs": {
             "hashes": [
@@ -364,11 +371,13 @@
             "version": "==1.2.0"
         },
         "flask": {
+            "extras": [
+                "async"
+            ],
             "hashes": [
                 "sha256:21128f47e4e3b9d597a3e8521a329bf56909b690fcc3fa3e477725aa81367638",
                 "sha256:cfadcdb638b609361d29ec22360d6070a77d7463dcb3ab08d2c2f2f168845f58"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==3.0.0"
         },
@@ -721,11 +730,11 @@
         },
         "langsmith": {
             "hashes": [
-                "sha256:249dae3625580fc9c1477be447ecd8dc1db76d1c8b59d0296abc027a37a0ce0b",
-                "sha256:5d573dae3c59c84aca9e4d30a79ef49906151a32bf43830ff83863a825993ac2"
+                "sha256:3e008854204c5eaae007f34c7e249059218605689c385c037f6a40cac044833b",
+                "sha256:3fd44c58bd53cb9366af3de129c7f11b6947914f1bb598a585240df0e2c566eb"
             ],
             "markers": "python_version < '4.0' and python_full_version >= '3.8.1'",
-            "version": "==0.0.74"
+            "version": "==0.0.75"
         },
         "lxml": {
             "hashes": [
@@ -1875,11 +1884,11 @@
         },
         "unstructured-client": {
             "hashes": [
-                "sha256:7b8640be5b163a8554870959be411ca7c5f39ba5a5c31d83cb7fecda974f5042",
-                "sha256:d091e0dcd926f24a356c3cf80e4e3151668c60322fa357bb66419ac59a5672a5"
+                "sha256:6769871507b80f8ab37114eb0e7289aec9b80204cc22e5de8bcbb07c02d43e19",
+                "sha256:c1a4f1dd8128eb08c2b07b404912111147f0135bdd2e6736b1f9b5a451b13c7d"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.15.0"
+            "version": "==0.15.1"
         },
         "urllib3": {
             "extras": [

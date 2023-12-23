@@ -1,4 +1,3 @@
-import asyncio
 from kor import extract_from_documents, from_pydantic, create_extraction_chain
 from langchain.docstore.document import Document
 from pydantic import BaseModel, Field, ConfigDict, field_validator
@@ -43,7 +42,7 @@ class EntityRelationSchema(BaseModel):
         return v
 
 
-def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]:
+async def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]:
     llm = utils.chat_llm()
     schema, extraction_validator = from_pydantic(
         EntityRelationSchema,
@@ -134,13 +133,15 @@ def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]
         input_formatter="triple_quotes",
     )
 
-    # run extraction
-    document_extraction_results = asyncio.run(
-        extract_from_documents(
-            chain, docs, max_concurrency=5, use_uid=False, return_exceptions=True
-        )
-    )
     extraction_data = []
+
+    document_extraction_results = await extract_from_documents(
+        chain,
+        docs,
+        max_concurrency=5,
+        use_uid=False,
+        return_exceptions=True,
+    )
 
     for result in document_extraction_results:
         if isinstance(result, Exception):
@@ -154,12 +155,13 @@ def extract_entity_relations(docs: list[Document]) -> list[EntityRelationSchema]
 if __name__ == "__main__":
     from langchain.document_loaders import WikipediaLoader
     from langchain.text_splitter import TokenTextSplitter
+    import asyncio
 
     docs = WikipediaLoader(query="Walt Disney").load()
     text_splitter = TokenTextSplitter(chunk_size=2048, chunk_overlap=24)
     split_docs = text_splitter.split_documents(docs)
 
-    entity_relations = extract_entity_relations(docs)
+    entity_relations = asyncio.run(extract_entity_relations(docs))
     assert len(entity_relations)
     for entity in entity_relations:
         print(entity)

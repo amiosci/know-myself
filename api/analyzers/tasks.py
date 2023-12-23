@@ -1,3 +1,7 @@
+import asyncio
+from contextlib import suppress
+from collections.abc import Awaitable
+
 from celery import shared_task
 from celery.utils.log import get_logger
 from langchain.docstore.document import Document
@@ -18,31 +22,43 @@ def _run_celery_analyzer_task(
     task_id: str,
     task_name: str,
     precondition: Callable[[str], bool],
-    run_analyzer: Callable[[list[Document]], T],
+    run_analyzer: Callable[[list[Document]], Awaitable[T]],
     on_generated: Callable[[str, T], None],
 ):
-    if precondition(hash):
-        logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
-        return
+    async def run_processor():
+        if precondition(hash):
+            logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
+            return
 
-    persist.update_processing_action_state(hash, task_id, task_name, "STARTED")
-    store = disk_store.default_store(logging_func=logger.info)
-    docs = store.restore_document_content(hash)
-    if len(docs) == 0:
-        logger.info(f"[{task_name}] Skipping - No content found: {hash}")
-        return
+        persist.update_processing_action_state(hash, task_id, task_name, "STARTED")
+        store = disk_store.default_store(logging_func=logger.info)
+        docs = store.restore_document_content(hash)
+        if len(docs) == 0:
+            logger.info(f"[{task_name}] Skipping - No content found: {hash}")
+            return
+
+        with suppress(TimeoutError, asyncio.CancelledError):
+            logger.info(f"[{task_name}] Document size: {len(docs)}")
+            analyzer_response = await run_analyzer(docs)
+
+            if analyzer_response:
+                logger.info(f"[{task_name}] Saving: {hash}")
+                on_generated(hash, analyzer_response)
+            else:
+                logger.info(f"[{task_name}] Nothing generated for {hash}")
+
+            persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
+    
+    async def process_with_timeout(*args, **kwargs):
+        async with asyncio.timeout(3600):  # 1h
+            return await run_processor(*args, **kwargs)
 
     try:
-        logger.info(f"[{task_name}] Document size: {len(docs)}")
-        summary_text = run_analyzer(docs)
-
-        if summary_text:
-            logger.info(f"[{task_name}] Saving: {hash}")
-            on_generated(hash, summary_text)
-        else:
-            logger.info(f"[{task_name}] Nothing generated for {hash}")
-
-        persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
+        asyncio.run(process_with_timeout())
+    except TimeoutError:
+        persist.update_processing_action_state(hash, task_id, task_name, "TIMEOUT")
+    except asyncio.CancelledError:
+        persist.update_processing_action_state(hash, task_id, task_name, "CANCELLED")
     except:
         persist.update_processing_action_state(hash, task_id, task_name, "FAILED")
 

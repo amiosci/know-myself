@@ -6,7 +6,7 @@ from langchain.docstore.document import Document
 from analyzers import utils
 
 
-def summarize_document(texts: list[Document]) -> str:
+async def summarize_document(texts: list[Document]) -> str:
     prompt_template = """Write a concise summary of the following:
     {text}
     CONCISE SUMMARY:"""
