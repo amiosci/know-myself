@@ -98,6 +98,7 @@ const init = async () => {
 
     // reset dialog elements after animations finalize
     detailsDialog.addEventListener('sl-after-hide', (event) => {
+        // prevent internal events from bubbing into dialog closure handler
         if (event.target !== detailsDialog) {
             return;
         }
@@ -172,6 +173,54 @@ const init = async () => {
 
         summaryElement.textContent = summaryResponse.summary;
         urlElement.textContent = rowUrl;
+
+        const getEntitiesResponse = await fetch(`${apiHost}/entities/${rowHash}`, {
+            method: 'GET'
+        });
+
+        const graphData = await getEntitiesResponse.json();
+
+        const graph = new Graph({
+            multi: true,
+        });
+        const n = graphData.length;
+        for (const node of graphData) {
+            ['entity', 'target'].forEach((nodeProperty) => {
+                if (!graph.hasNode(node[nodeProperty])) {
+                    graph.addNode(node[nodeProperty], {
+                        size: 15,
+                        label: node[nodeProperty],
+                        // TODO: Lerp based on edge connections?
+                        color: RED,
+                    });
+                }
+            });
+
+            graph.addEdge(node['entity'], node['target'], {
+                type: "line",
+                label: node['relationship'],
+                size: 20,
+            });
+        }
+
+        // set default positions
+        graph.nodes().forEach((node, i) => {
+            const angle = (i * 2 * Math.PI) / graph.order;
+            graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
+            graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
+        });
+
+        const layout = new ForceSupervisor(graph);
+        renderer = new Sigma(graph, graphElement, {
+            nodeProgramClasses: {
+                image: getNodeProgramImage(),
+                // border: NodeProgramBorder,
+            },
+            allowInvalidContainer: true,
+            renderEdgeLabels: true,
+        });
+
+        layout.start();
 
         detailsDialog.show();
     });
