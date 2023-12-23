@@ -1,5 +1,4 @@
 import asyncio
-from contextlib import suppress
 from collections.abc import Awaitable
 
 from celery import shared_task
@@ -37,28 +36,28 @@ def _run_celery_analyzer_task(
             logger.info(f"[{task_name}] Skipping - No content found: {hash}")
             return
 
-        with suppress(TimeoutError, asyncio.CancelledError):
-            logger.info(f"[{task_name}] Document size: {len(docs)}")
-            analyzer_response = await run_analyzer(docs)
+        logger.info(f"[{task_name}] Document size: {len(docs)}")
+        analyzer_response = await run_analyzer(docs)
 
-            if analyzer_response:
-                logger.info(f"[{task_name}] Saving: {hash}")
-                on_generated(hash, analyzer_response)
-            else:
-                logger.info(f"[{task_name}] Nothing generated for {hash}")
+        if analyzer_response:
+            logger.info(f"[{task_name}] Saving: {hash}")
+            on_generated(hash, analyzer_response)
+        else:
+            logger.info(f"[{task_name}] Nothing generated for {hash}")
 
-            persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
+        persist.update_processing_action_state(hash, task_id, task_name, "COMPLETE")
     
-    async def process_with_timeout(*args, **kwargs):
+    async def process_with_timeout():
         async with asyncio.timeout(3600):  # 1h
-            return await run_processor(*args, **kwargs)
+            return await run_processor()
 
     try:
         asyncio.run(process_with_timeout())
-    except TimeoutError:
-        persist.update_processing_action_state(hash, task_id, task_name, "TIMEOUT")
-    except asyncio.CancelledError:
-        persist.update_processing_action_state(hash, task_id, task_name, "CANCELLED")
+    except (TimeoutError, asyncio.CancelledError) as e:
+        status = "CANCELLED"
+        if isinstance(e, TimeoutError):
+            status = "TIMEOUT"
+        persist.update_processing_action_state(hash, task_id, task_name, status)
     except:
         persist.update_processing_action_state(hash, task_id, task_name, "FAILED")
 
