@@ -75,6 +75,8 @@ class DiskStore:
     def load_entity_relations(self, hash: str) -> list[extraction.EntityRelationSchema]:
         content_path = self._hash_path(hash)
         entity_relations_path = f"{content_path}.entity_relations"
+        if not os.path.exists(entity_relations_path):
+            return []
         with open(entity_relations_path, "r") as f:
             return [extraction.EntityRelationSchema(**x) for x in list(json.load(f))]
 

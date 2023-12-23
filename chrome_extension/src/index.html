@@ -12,6 +12,44 @@
   <script type="module" src="app.js"></script>
 
   <style>
+    .menu-header {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .menu-header-actions {
+      flex: 1;
+      justify-content: end;
+      align-items: center;
+      flex-shrink: 0;
+      display: flex;
+    }
+
+    .page-content-main {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      overflow: auto;
+
+      display: flex;
+      flex-direction: column;
+    }
+
+    .settings-open {
+      font-size: 1.5rem;
+    }
+
+    .content-container {
+      margin: 1rem;
+    }
+
+    .page-segment {
+      height: 100%;
+      flex: var(--segment-width, 1);
+    }
+
     .entity-graph {
       width: 600px;
       height: 400px;
@@ -42,35 +80,49 @@
 </head>
 
 <body class="viewport">
-  <!-- top right floating toolbar -->
-  <div class="floating-toolbar">
-    <sl-icon-button class="floating-toolbar-open-drawer" name="list" label="Settings"></sl-icon-button>
-  </div>
-
-  <!-- right-side drawer -->
-  <sl-drawer label="KMS" class="sidebar-drawer">
-    <sl-button class="settings-open" variant="default">
-      <sl-icon slot="prefix" name="gear"></sl-icon>
-      Open Settings
-    </sl-button>
-  </sl-drawer>
-
   <!-- Main content -->
-  <div>
-    <sl-tab-group>
-      <sl-tab slot="nav" panel="results">Results</sl-tab>
-      <sl-tab slot="nav" panel="tasks">Processing Queue</sl-tab>
+  <div class="page-content-main">
 
-      <sl-tab-panel name="results">
-        <smart-table page-size="10" column-menu paging filtering sortable class="results-table">
-        </smart-table>
-      </sl-tab-panel>
-      <sl-tab-panel name="tasks">
-        <smart-table page-size="10" column-menu paging filtering sortable class="tasks-table">
-        </smart-table>
-      </sl-tab-panel>
-    </sl-tab-group>
-  </div>
+    <div class="content-container">
+      <div class="menu-header">
+        <h2>Know Myself</h2>
+
+        <div class="menu-header-actions">
+          <sl-icon-button class="settings-open" name="gear">
+            Open Settings
+          </sl-icon-button>
+        </div>
+      </div>
+      <sl-divider style="--spacing: 2rem;"></sl-divider>
+
+      <div class="content-container">
+
+        <sl-tab-group placement="start">
+          <sl-tab slot="nav" panel="results">Results</sl-tab>
+          <sl-tab slot="nav" panel="tasks">Processing Queue</sl-tab>
+
+          <sl-tab-panel name="results">
+            <div class="content-container">
+              <sl-breadcrumb>
+                <sl-breadcrumb-item>Home</sl-breadcrumb-item>
+              </sl-breadcrumb>
+            </div>
+            <smart-table page-size="10" column-menu paging filtering sortable class="results-table">
+            </smart-table>
+          </sl-tab-panel>
+
+          <sl-tab-panel name="tasks">
+            <div class="content-container">
+              <sl-breadcrumb>
+                <sl-breadcrumb-item>Home</sl-breadcrumb-item>
+              </sl-breadcrumb>
+            </div>
+            <smart-table page-size="10" column-menu paging filtering sortable class="tasks-table">
+            </smart-table>
+          </sl-tab-panel>
+        </sl-tab-group>
+      </div>
+    </div>
 </body>
 
 <!-- View Document Summary Dialog -->

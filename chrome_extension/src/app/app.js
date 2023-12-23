@@ -79,12 +79,6 @@ const init = async () => {
         const rowStatus = e.detail.row.status;
     });
 
-    const drawerElement = document.querySelector('.sidebar-drawer');
-    const openDrawerButton = document.querySelector('.floating-toolbar-open-drawer');
-    openDrawerButton.addEventListener('click', () => {
-        drawerElement.show();
-    });
-
     const detailsDialog = document.querySelector('.document-dialog');
     const summaryElement = detailsDialog.querySelector('.document-summary-content');
     const entitiesElement = detailsDialog.querySelector('.document-entities-content');
@@ -134,67 +128,72 @@ const init = async () => {
 
         const graphData = await getEntitiesResponse.json();
 
-        const graph = new Graph({
-            multi: true,
-        });
-
-        for (const node of graphData) {
-            ['entity', 'target'].forEach((nodeProperty) => {
-                if (!graph.hasNode(node[nodeProperty])) {
-                    graph.addNode(node[nodeProperty], {
-                        size: 15,
-                        label: node[nodeProperty],
-                    });
-                }
+        if (graphData.length === 0) {
+            entitiesElement.setAttribute('disabled', true);
+        } else {
+            entitiesElement.removeAttribute('disabled');
+            const graph = new Graph({
+                multi: true,
             });
 
-            graph.addEdge(node['entity'], node['target'], {
-                type: "line",
-                label: node['relationship'],
-                size: 20,
+            for (const node of graphData) {
+                ['entity', 'target'].forEach((nodeProperty) => {
+                    if (!graph.hasNode(node[nodeProperty])) {
+                        graph.addNode(node[nodeProperty], {
+                            size: 15,
+                            label: node[nodeProperty],
+                        });
+                    }
+                });
+
+                graph.addEdge(node['entity'], node['target'], {
+                    type: "line",
+                    label: node['relationship'],
+                    size: 20,
+                });
+            }
+
+            const connectionMap = {};
+            let maxConnections = 0;
+            [...graph.edgeEntries()].forEach(graphEdge => {
+                const target = graphEdge.target;
+
+                const nodeConnections = (connectionMap[target] ?? 0) + 1;
+                connectionMap[target] = nodeConnections;
+                maxConnections = Math.max(nodeConnections, maxConnections);
             });
+
+            const nodeColorRange = BLUE.steps(RED, {
+                outputSpace: 'srgb',
+                // Add 1 to support nodes without connections
+                steps: maxConnections + 1
+            });
+
+            // set default positions
+            graph.nodes().forEach((node, i) => {
+                const angle = (i * 2 * Math.PI) / graph.order;
+
+                // no record exists if the node isn't a target
+                const nodeColorIndex = connectionMap[node] ?? 0;
+                const nodeColorHex = nodeColorRange[nodeColorIndex].toString({ format: "hex" });
+
+                graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
+                graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
+                graph.setNodeAttribute(node, "color", nodeColorHex);
+            });
+
+            renderer = new Sigma(graph, graphElement, {
+                nodeProgramClasses: {
+                },
+                edgeProgramClasses: {
+                },
+                allowInvalidContainer: true,
+                renderEdgeLabels: true,
+            });
+
+            const layout = new ForceSupervisor(graph);
+            layout.start();
         }
-
-        const connectionMap = {};
-        let maxConnections = 0;
-        [...graph.edgeEntries()].forEach(graphEdge => {
-            const target = graphEdge.target;
-
-            const nodeConnections = (connectionMap[target] ?? 0) + 1;
-            connectionMap[target] = nodeConnections;
-            maxConnections = Math.max(nodeConnections, maxConnections);
-        });
-
-        const nodeColorRange = BLUE.steps(RED, {
-            outputSpace: 'srgb',
-            // Add 1 to support nodes without connections
-            steps: maxConnections + 1
-        });
-
-        // set default positions
-        graph.nodes().forEach((node, i) => {
-            const angle = (i * 2 * Math.PI) / graph.order;
-
-            // no record exists if the node isn't a target
-            const nodeColorIndex = connectionMap[node] ?? 0;
-            const nodeColorHex = nodeColorRange[nodeColorIndex].toString({ format: "hex" });
-
-            graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
-            graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
-            graph.setNodeAttribute(node, "color", nodeColorHex);
-        });
-
-        renderer = new Sigma(graph, graphElement, {
-            nodeProgramClasses: {
-            },
-            edgeProgramClasses: {
-            },
-            allowInvalidContainer: true,
-            renderEdgeLabels: true,
-        });
-
-        const layout = new ForceSupervisor(graph);
-        layout.start();
 
         summaryElement.textContent = summaryResponse.summary;
         urlElement.textContent = rowUrl;
