@@ -7,6 +7,7 @@
     "dependencies": {
         "@shoelace-style/shoelace": "^2.12.0",
         "bootstrap": "^5.3.2",
+        "colorjs.io": "^0.4.5",
         "graphology": "^0.25.4",
         "graphology-layout-force": "^0.2.4",
         "graphology-layout-forceatlas2": "^0.10.1",
@@ -45,12 +46,6 @@
                 "name": "shoelace",
                 "src": [
                     "node_modules/@shoelace-style/shoelace/dist/shoelace.js"
-                ]
-            },
-            {
-                "name": "vis-network",
-                "src": [
-                    "node_modules/vis-network/standalone/umd/vis-network.min.js"
                 ]
             },
             {

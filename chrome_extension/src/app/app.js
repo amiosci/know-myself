@@ -2,6 +2,7 @@ import Graph from "graphology";
 import Sigma from "sigma";
 import ForceSupervisor from "graphology-layout-force/worker";
 import getNodeProgramImage from "sigma/rendering/programs/node-image";
+import Color from "colorjs.io";
 
 const getApiHost = async () => {
     const apiHost = await chrome.storage.sync.get('kms.apihost');
@@ -89,10 +90,6 @@ const init = async () => {
     const entitiesElement = detailsDialog.querySelector('.document-entities-content');
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
-    const RED = "#FA4F40";
-    const BLUE = "#727EE0";
-    const GREEN = "#5DB346";
-
     const graphElement = document.querySelector('.entity-graph');
     let renderer = null;
 
@@ -114,6 +111,9 @@ const init = async () => {
         detailsDialog.hide();
         window.open(urlElement.textContent);
     });
+
+    const BLUE = new Color("#727EE0");
+    const RED = new Color("#FA4F40");
 
     resultsTable.addEventListener('cellClick', async (e) => {
         const rowHash = e.detail.row.hash;
@@ -144,8 +144,6 @@ const init = async () => {
                     graph.addNode(node[nodeProperty], {
                         size: 15,
                         label: node[nodeProperty],
-                        // TODO: Lerp based on edge connections?
-                        color: RED,
                     });
                 }
             });
@@ -157,23 +155,45 @@ const init = async () => {
             });
         }
 
+        const connectionMap = {};
+        let maxConnections = 0;
+        [...graph.edgeEntries()].forEach(graphEdge => {
+            const target = graphEdge.target;
+
+            const nodeConnections = (connectionMap[target] ?? 0) + 1;
+            connectionMap[target] = nodeConnections;
+            maxConnections = Math.max(nodeConnections, maxConnections);
+        });
+
+        const nodeColorRange = BLUE.steps(RED, {
+            outputSpace: 'srgb',
+            // Add 1 to support nodes without connections
+            steps: maxConnections + 1
+        });
+
         // set default positions
         graph.nodes().forEach((node, i) => {
             const angle = (i * 2 * Math.PI) / graph.order;
+
+            // no record exists if the node isn't a target
+            const nodeColorIndex = connectionMap[node] ?? 0;
+            const nodeColorHex = nodeColorRange[nodeColorIndex].toString({ format: "hex" });
+
             graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
             graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
+            graph.setNodeAttribute(node, "color", nodeColorHex);
         });
 
-        const layout = new ForceSupervisor(graph);
         renderer = new Sigma(graph, graphElement, {
             nodeProgramClasses: {
-                image: getNodeProgramImage(),
-                // border: NodeProgramBorder,
+            },
+            edgeProgramClasses: {
             },
             allowInvalidContainer: true,
             renderEdgeLabels: true,
         });
 
+        const layout = new ForceSupervisor(graph);
         layout.start();
 
         summaryElement.textContent = summaryResponse.summary;
