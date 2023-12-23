@@ -1,6 +1,8 @@
-import Graph from "graphology";
+import DirectedGraph from "graphology";
 import Sigma from "sigma";
 import ForceSupervisor from "graphology-layout-force/worker";
+import { connectedComponents } from 'graphology-components';
+import { subgraph } from 'graphology-operators';
 import getNodeProgramImage from "sigma/rendering/programs/node-image";
 import Color from "colorjs.io";
 
@@ -84,9 +86,14 @@ const init = async () => {
     const entitiesElement = detailsDialog.querySelector('.document-entities-content');
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
-    const graphElement = document.querySelector('.entity-graph');
-    let renderer = null;
+    const graphContainerElement = document.querySelector('.entity-graph-container');
+    let renderers = [];
 
+    const removeAllChildNodes = (parent) => {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
     // reset dialog elements after animations finalize
     detailsDialog.addEventListener('sl-after-hide', (event) => {
         // prevent internal events from bubbing into dialog closure handler
@@ -94,10 +101,14 @@ const init = async () => {
             return;
         }
 
-        renderer?.kill();
-        renderer = null;
+        for (const graphRenderer of renderers) {
+            graphRenderer.kill();
+        }
+
+        renderers = [];
         summaryElement.hide();
         entitiesElement.hide();
+        removeAllChildNodes(graphContainerElement);
     });
 
     const newWindowButton = detailsDialog.querySelector('.new-window');
@@ -132,7 +143,7 @@ const init = async () => {
             entitiesElement.setAttribute('disabled', true);
         } else {
             entitiesElement.removeAttribute('disabled');
-            const graph = new Graph({
+            const graph = new DirectedGraph({
                 multi: true,
             });
 
@@ -149,7 +160,7 @@ const init = async () => {
                 graph.addEdge(node['entity'], node['target'], {
                     type: "line",
                     label: node['relationship'],
-                    size: 20,
+                    size: 2,
                 });
             }
 
@@ -182,17 +193,50 @@ const init = async () => {
                 graph.setNodeAttribute(node, "color", nodeColorHex);
             });
 
-            renderer = new Sigma(graph, graphElement, {
-                nodeProgramClasses: {
-                },
-                edgeProgramClasses: {
-                },
-                allowInvalidContainer: true,
-                renderEdgeLabels: true,
-            });
+            // Render relevant graphs
+            const componentMinimumSize = 3;
+            const componentNodes = connectedComponents(graph).filter(x => x.length >= componentMinimumSize);
+            // tab mode
+            if (componentNodes.length > 1) {
+                const graphTabGroup = document.createElement('sl-tab-group');
+                graphTabGroup.setAttribute('placement', 'start');
 
-            const layout = new ForceSupervisor(graph);
-            layout.start();
+                let tabNumber = 0;
+                for (const component of componentNodes) {
+                    console.log(component);
+
+                    const graphTabElement = document.createElement('sl-tab');
+                    graphTabElement.setAttribute('slot', 'nav');
+                    graphTabElement.setAttribute('panel', tabNumber);
+                    graphTabElement.innerText = `Tab ${tabNumber}`;
+
+                    const graphTabContentElement = document.createElement('sl-tab-panel');
+                    graphTabContentElement.setAttribute('name', tabNumber);
+
+                    const graphElement = document.createElement('div');
+                    graphElement.classList.add('entity-graph');
+
+                    graphTabGroup.appendChild(graphTabContentElement);
+                    graphTabGroup.appendChild(graphTabElement);
+                    graphTabContentElement.appendChild(graphElement);
+                    tabNumber += 1;
+
+                    const componentGraph = subgraph(graph, component);
+                    renderers.push(new Sigma(componentGraph, graphElement, {
+                        nodeProgramClasses: {
+                        },
+                        edgeProgramClasses: {
+                        },
+                        allowInvalidContainer: true,
+                        renderEdgeLabels: true,
+                    }));
+
+                    const layout = new ForceSupervisor(componentGraph);
+                    layout.start();
+                }
+            }
+
+            graphContainerElement.appendChild(graphTabGroup);
         }
 
         summaryElement.textContent = summaryResponse.summary;
