@@ -186,7 +186,6 @@ const init = async () => {
     };
 
     const renderGraphByName = (element, graph, components) => {
-        let draggedNode = null;
         const componentGraph = subgraph(graph, components);
         if (graphRenderer !== null) {
             debugger;
@@ -203,21 +202,6 @@ const init = async () => {
             edgeProgramClasses: {},
             allowInvalidContainer: true,
             renderEdgeLabels: true,
-        });
-
-        graphRenderer.on("downNode", (e) => {
-            debugger;
-            draggedNode = e.node;
-            componentGraph.setNodeAttribute(draggedNode, "highlighted", true);
-        });
-
-        graphRenderer.getMouseCaptor().on("mouseup", () => {
-            debugger;
-            if (draggedNode) {
-                componentGraph.removeNodeAttribute(draggedNode, "highlighted");
-            }
-
-            draggedNode = null;
         });
     }
 
