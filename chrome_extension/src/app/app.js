@@ -172,8 +172,6 @@ const init = async () => {
                 maxConnections = Math.max(nodeConnections, maxConnections);
             });
 
-            console.log(connectionMap);
-
             const nodeColorRange = BLUE.steps(RED, {
                 outputSpace: 'srgb',
                 // Add 1 to support nodes without connections
@@ -204,16 +202,10 @@ const init = async () => {
                 graphTabMap[primaryNode] = component;
             }
 
-            // tab mode
-            const graphTabGroup = document.createElement('sl-tab-group');
-            graphTabGroup.setAttribute('placement', 'start');
-
-            graphTabGroup.addEventListener('sl-tab-show', (event) => {
-                const name = event.detail.name;
-
+            const renderGraphByName = (name) => {
                 const component = graphTabMap[name];
                 console.log(`opened ${name}: ${component}`);
-                const graphElement = document.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph')
+                const graphElement = document.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph');
                 let draggedNode = null;
                 const componentGraph = subgraph(graph, component);
                 if (graphRenderer !== null) {
@@ -245,8 +237,17 @@ const init = async () => {
                 const layout = new ForceSupervisor(componentGraph, {
                     isNodeFixed: (_, attr) => attr.highlighted
                 });
-
                 layout.start();
+            }
+
+
+            // tab mode
+            const graphTabGroup = document.createElement('sl-tab-group');
+            graphTabGroup.setAttribute('placement', 'start');
+
+            graphTabGroup.addEventListener('sl-tab-show', (event) => {
+                const name = event.detail.name;
+                renderGraphByName(name);
             });
 
             graphTabGroup.addEventListener('sl-tab-hide', (event) => {
@@ -262,20 +263,19 @@ const init = async () => {
                 graphTabElement.setAttribute('slot', 'nav');
                 graphTabElement.setAttribute('panel', tabName);
                 graphTabElement.innerText = tabName;
+                graphTabGroup.appendChild(graphTabElement);
 
                 const graphTabContentElement = document.createElement('sl-tab-panel');
                 graphTabContentElement.setAttribute('name', tabName);
+                graphTabGroup.appendChild(graphTabContentElement);
 
                 const graphElement = document.createElement('div');
                 graphElement.classList.add('entity-graph');
-
-                graphTabGroup.appendChild(graphTabContentElement);
-                graphTabGroup.appendChild(graphTabElement);
                 graphTabContentElement.appendChild(graphElement);
             }
 
             graphContainerElement.appendChild(graphTabGroup);
-            graphTabGroup.show(Object.keys(graphTabGroup)[0]);
+            renderGraphByName(Object.keys(graphTabMap)[0]);
         }
 
         summaryElement.textContent = summaryResponse.summary;
