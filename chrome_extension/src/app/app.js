@@ -87,7 +87,7 @@ const init = async () => {
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
     const graphContainerElement = document.querySelector('.entity-graph-container');
-    let renderers = [];
+    let graphRenderer = null;
 
     const removeAllChildNodes = (parent) => {
         while (parent.firstChild) {
@@ -101,11 +101,9 @@ const init = async () => {
             return;
         }
 
-        for (const graphRenderer of renderers) {
-            graphRenderer.kill();
-        }
+        graphRenderer?.kill();
+        graphRenderer = null;
 
-        renderers = [];
         summaryElement.hide();
         entitiesElement.hide();
         removeAllChildNodes(graphContainerElement);
@@ -198,23 +196,75 @@ const init = async () => {
             // Render relevant graphs
             const componentMinimumSize = 3;
             const componentNodes = connectedComponents(graph).filter(x => x.length >= componentMinimumSize);
+
+            const graphTabMap = {};
+            for (const component of componentNodes) {
+                component.sort((x, y) => (connectionMap[y] ?? 0) - (connectionMap[x] ?? 0));
+                const primaryNode = component[0];
+                graphTabMap[primaryNode] = component;
+            }
+
             // tab mode
             const graphTabGroup = document.createElement('sl-tab-group');
             graphTabGroup.setAttribute('placement', 'start');
 
-            let tabNumber = 0;
-            for (const component of componentNodes) {
-                const componentGraph = subgraph(graph, component);
-                component.sort((x, y) => (connectionMap[y] ?? 0) - (connectionMap[x] ?? 0));
-                const primaryNode = component[0];
+            graphTabGroup.addEventListener('sl-tab-show', (event) => {
+                const name = event.detail.name;
 
+                const component = graphTabMap[name];
+                console.log(`opened ${name}: ${component}`);
+                const graphElement = document.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph')
+                let draggedNode = null;
+                const componentGraph = subgraph(graph, component);
+                if (graphRenderer !== null) {
+                    debugger;
+                }
+
+                graphRenderer = new Sigma(componentGraph, graphElement, {
+                    nodeProgramClasses: {
+                    },
+                    edgeProgramClasses: {
+                    },
+                    allowInvalidContainer: true,
+                    renderEdgeLabels: true,
+                });
+
+                graphRenderer.on("downNode", (e) => {
+                    draggedNode = e.node;
+
+                    componentGraph.setNodeAttribute(draggedNode, "highlighted", true);
+                });
+
+                graphRenderer.getMouseCaptor().on("mouseup", () => {
+                    if (draggedNode) {
+                        componentGraph.removeNodeAttribute(draggedNode, "highlighted");
+                    }
+                    draggedNode = null;
+                });
+
+                const layout = new ForceSupervisor(componentGraph, {
+                    isNodeFixed: (_, attr) => attr.highlighted
+                });
+
+                layout.start();
+            });
+
+            graphTabGroup.addEventListener('sl-tab-hide', (event) => {
+                const name = event.detail.name;
+
+                console.log(`closed ${name}`);
+                graphRenderer?.kill();
+                graphRenderer = null;
+            });
+
+            for (const [tabName, _] of Object.entries(graphTabMap)) {
                 const graphTabElement = document.createElement('sl-tab');
                 graphTabElement.setAttribute('slot', 'nav');
-                graphTabElement.setAttribute('panel', tabNumber);
-                graphTabElement.innerText = primaryNode;
+                graphTabElement.setAttribute('panel', tabName);
+                graphTabElement.innerText = tabName;
 
                 const graphTabContentElement = document.createElement('sl-tab-panel');
-                graphTabContentElement.setAttribute('name', tabNumber);
+                graphTabContentElement.setAttribute('name', tabName);
 
                 const graphElement = document.createElement('div');
                 graphElement.classList.add('entity-graph');
@@ -222,22 +272,10 @@ const init = async () => {
                 graphTabGroup.appendChild(graphTabContentElement);
                 graphTabGroup.appendChild(graphTabElement);
                 graphTabContentElement.appendChild(graphElement);
-                tabNumber += 1;
-
-                renderers.push(new Sigma(componentGraph, graphElement, {
-                    nodeProgramClasses: {
-                    },
-                    edgeProgramClasses: {
-                    },
-                    allowInvalidContainer: true,
-                    renderEdgeLabels: true,
-                }));
-
-                const layout = new ForceSupervisor(componentGraph);
-                layout.start();
             }
 
             graphContainerElement.appendChild(graphTabGroup);
+            graphTabGroup.show(Object.keys(graphTabGroup)[0]);
         }
 
         summaryElement.textContent = summaryResponse.summary;
