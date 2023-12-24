@@ -51,8 +51,7 @@
     }
 
     .entity-graph {
-      width: 600px;
-      height: 400px;
+      height: 50vw;
       border: 1px solid lightgray;
     }
 
@@ -126,13 +125,14 @@
 
 <!-- View Document Summary Dialog -->
 <sl-dialog label="Document Details" class="document-dialog" style="--width: 70vw;">
+  <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
+
   <h4 class="document-dialog-url"></h4>
   <sl-details class="document-summary-content" summary="Summary"></sl-details>
   <sl-details class="document-entities-content" summary="Extracted Entities">
     <!-- Embedded graph -->
     <div class="entity-graph-container"></div>
   </sl-details>
-  <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
 </sl-dialog>
 
 <!-- Settings Dialog -->

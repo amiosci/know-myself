@@ -11,6 +11,12 @@ const getApiHost = async () => {
     return apiHost['kms.apihost'] || 'http://127.0.0.1:5000';
 }
 
+const removeAllChildNodes = (parent) => {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
 const init = async () => {
     const apiHost = await getApiHost();
 
@@ -88,12 +94,8 @@ const init = async () => {
 
     const graphContainerElement = document.querySelector('.entity-graph-container');
     let graphRenderer = null;
+    let detailsDialogAfterHideEvent = null;
 
-    const removeAllChildNodes = (parent) => {
-        while (parent.firstChild) {
-            parent.removeChild(parent.firstChild);
-        }
-    }
     // reset dialog elements after animations finalize
     detailsDialog.addEventListener('sl-after-hide', (event) => {
         // prevent internal events from bubbing into dialog closure handler
@@ -105,7 +107,9 @@ const init = async () => {
         graphRenderer = null;
 
         summaryElement.hide();
+
         entitiesElement.hide();
+
         removeAllChildNodes(graphContainerElement);
     });
 
@@ -205,12 +209,18 @@ const init = async () => {
             const renderGraphByName = (name) => {
                 const component = graphTabMap[name];
                 console.log(`opened ${name}: ${component}`);
-                const graphElement = document.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph');
+                const graphElement = detailsDialog.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph');
                 let draggedNode = null;
                 const componentGraph = subgraph(graph, component);
                 if (graphRenderer !== null) {
                     debugger;
                 }
+
+                const layout = new ForceSupervisor(componentGraph, {
+                    isNodeFixed: (_, attr) => attr.highlighted
+                });
+
+                layout.start();
 
                 graphRenderer = new Sigma(componentGraph, graphElement, {
                     nodeProgramClasses: {
@@ -224,6 +234,8 @@ const init = async () => {
                 graphRenderer.on("downNode", (e) => {
                     draggedNode = e.node;
 
+                    debugger;
+
                     componentGraph.setNodeAttribute(draggedNode, "highlighted", true);
                 });
 
@@ -233,20 +245,16 @@ const init = async () => {
                     }
                     draggedNode = null;
                 });
-
-                const layout = new ForceSupervisor(componentGraph, {
-                    isNodeFixed: (_, attr) => attr.highlighted
-                });
-                layout.start();
             }
-
 
             // tab mode
             const graphTabGroup = document.createElement('sl-tab-group');
             graphTabGroup.setAttribute('placement', 'start');
+            graphContainerElement.appendChild(graphTabGroup);
 
             graphTabGroup.addEventListener('sl-tab-show', (event) => {
                 const name = event.detail.name;
+                console.log('started from tab group');
                 renderGraphByName(name);
             });
 
@@ -274,8 +282,36 @@ const init = async () => {
                 graphTabContentElement.appendChild(graphElement);
             }
 
-            graphContainerElement.appendChild(graphTabGroup);
-            renderGraphByName(Object.keys(graphTabMap)[0]);
+            const entitiesAfterShowEvent = (event) => {
+                // prevent internal events from bubbing into dialog closure handler
+                if (event.target !== entitiesElement) {
+                    return;
+                }
+
+                console.log('started from showing entities content');
+                renderGraphByName(detailsDialog.querySelector(`sl-tab[active]`).textContent);
+            };
+            entitiesElement.addEventListener('sl-after-show', entitiesAfterShowEvent);
+
+            const entitiesHideEvent = (event) => {
+                // prevent internal events from bubbing into dialog closure handler
+                if (event.target !== entitiesElement) {
+                    return;
+                }
+
+                graphRenderer?.kill();
+                graphRenderer = null;
+            };
+            entitiesElement.addEventListener('sl-hide', entitiesHideEvent);
+
+            detailsDialogAfterHideEvent = detailsDialog.addEventListener('sl-after-hide', (event) => {
+                if (event.target !== detailsDialog) {
+                    return;
+                }
+
+                entitiesElement.removeEventListener('sl-after-show', entitiesAfterShowEvent);
+                entitiesElement.removeEventListener('sl-hide', entitiesHideEvent);
+            })
         }
 
         summaryElement.textContent = summaryResponse.summary;
