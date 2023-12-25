@@ -72,19 +72,6 @@ export const configureDetailsDialog = () => {
             allowInvalidContainer: true,
             renderEdgeLabels: true,
             enableEdgeClickEvents: true,
-            // nodeReducer: (node, data) => {
-            //     const res = { ...data };
-            //     return res;
-            // },
-            // edgeReducer: (edge, data) => {
-            //     const res = { ...data };
-
-            //     if (state.hoveredNode && !componentGraph.hasExtremity(edge, state.hoveredNode)) {
-            //         res.hidden = true;
-            //     }
-
-            //     return res;
-            // },
         });
         const mouseCaptor = graphRenderer.getMouseCaptor();
 
