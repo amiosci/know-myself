@@ -1,6 +1,9 @@
 from kor import extract_from_documents, from_pydantic, create_extraction_chain
 from langchain.docstore.document import Document
 from pydantic import BaseModel, Field, ConfigDict, field_validator
+from collections.abc import Iterable
+
+import re
 
 from analyzers import utils
 
@@ -149,7 +152,20 @@ async def extract_entity_relations(docs: list[Document]) -> list[EntityRelationS
             continue
         extraction_data.extend(result["validated_data"])
 
-    return extraction_data
+    return list(filter_common_erroneous_relations(extraction_data))
+
+
+# the same is seen on other properties when this output is generated
+_INVALID_ENTITY_REGEX = re.compile(r"[\[\]*]+entity$")
+
+
+def filter_common_erroneous_relations(
+    relations: list[EntityRelationSchema],
+) -> Iterable[EntityRelationSchema]:
+    for relation in relations:
+        if _INVALID_ENTITY_REGEX.match(relation.entity):
+            continue
+        yield relation
 
 
 if __name__ == "__main__":
