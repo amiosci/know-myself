@@ -15,25 +15,14 @@ export const configureDetailsDialog = () => {
     const urlElement = detailsDialog.querySelector('.document-dialog-url');
 
     const newWindowButton = detailsDialog.querySelector('.new-window');
-    newWindowButton.addEventListener('click', () => {
-        detailsDialog.hide();
+    addSafeEventListener(newWindowButton, 'click', () => {
+        // maybe close?!?
+        // detailsDialog.hide();
         window.open(urlElement.textContent);
     });
 
     // Graph context menu
-    const graphContextMenuElement = document.querySelector('.graph-context-menu');
-    const resetGraphContextMenu = () => {
-        graphContextMenuElement.style.visibility = 'hidden';
-        graphContextMenuElement.removeAttribute('selected-node');
-    };
-
-    addSafeEventListener(graphContextMenuElement, 'sl-select', (event) => {
-        const item = event.detail.item.value;
-        const node = graphContextMenuElement.getAttribute('selected-node');
-        console.log(`${node}: ${item}`);
-
-        resetGraphContextMenu();
-    });
+    const [graphContextMenuElement, resetGraphContextMenu] = createGraphContextMenu();
 
     const graphContainerElement = detailsDialog.querySelector('.entity-graph-container');
     let graphRenderer = null;
@@ -226,7 +215,7 @@ export const configureDetailsDialog = () => {
             }
 
             // Render graph on the newly displayed tab
-            const entitiesAfterShowEvent = addSafeEventListener(entitiesElement, 'sl-after-show', (event) => {
+            const entitiesAfterShowEvent = addSafeEventListener(entitiesElement, 'sl-after-show', (_) => {
                 const name = detailsDialog.querySelector(`sl-tab[active]`).textContent;
                 const graphElement = detailsDialog.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph');
                 renderGraphByName(graphElement, graph, graphTabMap[name]);
@@ -234,23 +223,53 @@ export const configureDetailsDialog = () => {
             });
 
             // stop graph rendering when display is collapsed
-            const entitiesHideEvent = addSafeEventListener(entitiesElement, 'sl-hide', (event) => {
+            const entitiesHideEvent = addSafeEventListener(entitiesElement, 'sl-hide', (_) => {
                 graphRenderer?.kill();
                 graphRenderer = null;
             });
 
             // remove graph-bound events on dialog closure
-            addSafeEventListener(detailsDialog, 'sl-after-hide', (event) => {
+            addSafeEventListener(detailsDialog, 'sl-after-hide', (_) => {
                 entitiesElement.removeEventListener('sl-after-show', entitiesAfterShowEvent);
                 entitiesElement.removeEventListener('sl-hide', entitiesHideEvent);
             });
         }
 
         detailsDialog.show();
-
     };
 
     return openForDocument;
+};
+
+const createGraphContextMenu = () => {
+    const graphContextMenuElement = document.querySelector('.graph-context-menu');
+    const resetGraphContextMenu = () => {
+        graphContextMenuElement.style.visibility = 'hidden';
+        graphContextMenuElement.removeAttribute('selected-node');
+    };
+
+    const menuItemActions = {
+        'documents': (node) => {
+
+        },
+        'update': (node) => {
+
+        },
+        'delete': (node) => {
+
+        },
+    };
+
+    addSafeEventListener(graphContextMenuElement, 'sl-select', (event) => {
+        const item = event.detail.item.value;
+        const node = graphContextMenuElement.getAttribute('selected-node');
+        console.log(`${node}: ${item}`);
+        resetGraphContextMenu();
+
+        menuItemActions[item](node);
+    });
+
+    return [graphContextMenuElement, resetGraphContextMenu];
 };
 
 const loadGraph = (graphData) => {
@@ -360,4 +379,4 @@ const defaultLogGraphEvents = (sigmaGraph, sigmaRenderer) => {
         "enterEdge",
         "leaveEdge",
     ].forEach((eventType) => sigmaRenderer.on(eventType, ({ edge }) => logEvent(eventType, "edge", edge)));
-}
+};
