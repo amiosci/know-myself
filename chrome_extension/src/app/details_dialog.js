@@ -6,7 +6,7 @@ import { connectedComponents, largestConnectedComponent } from 'graphology-compo
 import { subgraph } from 'graphology-operators';
 import Color from "colorjs.io";
 
-import { removeAllChildNodes, addSafeEventlistener } from "./utilities";
+import { removeAllChildNodes, addSafeEventListener } from "./utilities";
 
 export const configureDetailsDialog = () => {
     const detailsDialog = document.querySelector('.document-dialog');
@@ -27,7 +27,7 @@ export const configureDetailsDialog = () => {
         graphContextMenuElement.removeAttribute('selected-node');
     };
 
-    addSafeEventlistener(graphContextMenuElement, 'sl-select', (event) => {
+    addSafeEventListener(graphContextMenuElement, 'sl-select', (event) => {
         const item = event.detail.item.value;
         const node = graphContextMenuElement.getAttribute('selected-node');
         console.log(`${node}: ${item}`);
@@ -39,7 +39,7 @@ export const configureDetailsDialog = () => {
     let graphRenderer = null;
 
     // reset dialog elements after animations finalize
-    addSafeEventlistener(detailsDialog, 'sl-after-hide', (_) => {
+    addSafeEventListener(detailsDialog, 'sl-after-hide', (_) => {
         graphRenderer?.kill();
         graphRenderer = null;
 
@@ -55,30 +55,10 @@ export const configureDetailsDialog = () => {
             debugger;
         }
 
-        const primaryNode = largestConnectedComponent(componentGraph)[0];
-        const graphSettings = forceAtlas2.inferSettings(componentGraph);
-        const layout = new FA2LayoutSupervisor(componentGraph, {
-            iterations: 5,
-            settings: graphSettings,
-        });
-
-        layout.start();
-
-        const state = {};
-        graphRenderer = new Sigma(componentGraph, element, {
-            nodeProgramClasses: {},
-            edgeProgramClasses: {},
-            // TODO: Remove and fix tab loading
-            allowInvalidContainer: true,
-            renderEdgeLabels: true,
-            enableEdgeClickEvents: true,
-        });
-        const mouseCaptor = graphRenderer.getMouseCaptor();
-
-        // highlight topic node by default
-        componentGraph.setNodeAttribute(primaryNode, 'highlighted', true);
-
-        const getNodeAtCoordinate = ({ x, y }) => {
+        const getNodeAtCoordinate = ({ x, y }, {
+            minimumDistance = 1,
+            distanceTolerance = 0.1,
+        } = {}) => {
             const nodeDistances = componentGraph.mapNodes((_, attr) => {
                 const positionDeltas = {
                     x: Math.abs(attr.x - x),
@@ -93,10 +73,8 @@ export const configureDetailsDialog = () => {
             const closestNodeIndex = nodeDistances.indexOf(closestNodeDistance);
 
             // roughly within the boundaries of the node
-            const minimumDistance = 1;
-            const distanceTolerance = 0.1;
             const nodeInContext = closestNodeDistance - minimumDistance < distanceTolerance;
-            return [componentGraph.nodes()[closestNodeIndex], closestNodeDistance, nodeInContext];
+            return [componentGraph.nodes()[closestNodeIndex], nodeInContext];
         }
 
         const getEdgeAtCoordinate = ({ x, y }) => {
@@ -105,31 +83,53 @@ export const configureDetailsDialog = () => {
             return ['', Number.POSITIVE_INFINITY]
         }
 
+        const primaryNode = largestConnectedComponent(componentGraph)[0];
+        // highlight topic node by default
+        componentGraph.setNodeAttribute(primaryNode, 'highlighted', true);
+
+        const graphSettings = forceAtlas2.inferSettings(componentGraph);
+        const layout = new FA2LayoutSupervisor(componentGraph, {
+            iterations: 5,
+            settings: graphSettings,
+        });
+
+        layout.start();
+
+        graphRenderer = new Sigma(componentGraph, element, {
+            nodeProgramClasses: {},
+            edgeProgramClasses: {},
+            // TODO: Remove and fix tab loading
+            allowInvalidContainer: true,
+            renderEdgeLabels: true,
+            enableEdgeClickEvents: true,
+        });
+
+        defaultLogGraphEvents(componentGraph, graphRenderer);
         // left-click removes any active context menu
         graphRenderer.on('clickStage', (_) => {
             resetGraphContextMenu();
         });
+
+        const mouseCaptor = graphRenderer.getMouseCaptor();
 
         // right-click adds context-menu if there is an intent to select a node
         mouseCaptor.addListener("rightClick", (event) => {
             event.preventSigmaDefault();
             event.original.preventDefault();
 
-            // TODO: Make node events work on sigmajs
             const clickedPosition = graphRenderer.viewportToGraph(event);
-            const [closestNode, _, nodeInContext] = getNodeAtCoordinate(clickedPosition);
+            const [closestNode, nodeInContext] = getNodeAtCoordinate(clickedPosition);
 
             // always reset style before conditionally reparenting it
             resetGraphContextMenu();
             if (nodeInContext) {
                 console.log(`creating context menu for ${closestNode}`);
+                graphContextMenuElement.setAttribute('selected-node', closestNode);
 
                 const canvasCoords = {
                     x: event.x,
                     y: event.y
                 };
-
-                graphContextMenuElement.setAttribute('selected-node', closestNode);
 
                 // add context menu
                 graphRenderer.getContainer().appendChild(graphContextMenuElement);
@@ -141,6 +141,7 @@ export const configureDetailsDialog = () => {
                 });
             }
         });
+
         // fix support for node clicks
         mouseCaptor.addListener("click", (event) => {
             event.preventSigmaDefault();
@@ -148,16 +149,16 @@ export const configureDetailsDialog = () => {
 
             // TODO: test node events after sigmajs 3.0 exits beta
             const clickedPosition = graphRenderer.viewportToGraph(event);
-            const [closestNode, nodeDistance, nodeInContext] = getNodeAtCoordinate(clickedPosition);
+            const [closestNode, nodeInContext] = getNodeAtCoordinate(clickedPosition);
 
             if (nodeInContext) {
-                console.log(`Toggling selection of node (${closestNode}: ${nodeDistance})`);
                 const isHighlighted = !(componentGraph.getNodeAttribute(closestNode, 'highlighted') ?? false);
                 componentGraph.setNodeAttribute(closestNode, 'highlighted', isHighlighted);
             }
         });
+
         // remove context-menu if you are moving the body
-        mouseCaptor.addListener('mousemove', (event) => {
+        mouseCaptor.addListener('mousemove', (_) => {
             const moving =
                 graphRenderer.getCamera().isAnimated() ||
                 mouseCaptor.isMoving ||
@@ -173,44 +174,6 @@ export const configureDetailsDialog = () => {
         graphRenderer.getCamera().setState({
             angle: 0.2,
         });
-
-        // non-stage events won't work. Log them all until they do!
-        const logEvent = (event, itemType, item, onMessage = console.log) => {
-            let message = `Event "${event}"`;
-            if (item && itemType) {
-                const label = itemType === "node" ? componentGraph.getNodeAttribute(item, "label") : componentGraph.getEdgeAttribute(item, "label");
-                message += `, ${itemType} ${label || "with no label"} (id "${item}")`;
-
-                if (itemType === "edge") {
-                    message += `, source ${componentGraph.getSourceAttribute(item, "label")}, target: ${componentGraph.getTargetAttribute(
-                        item,
-                        "label",
-                    )}`;
-                }
-            }
-
-            onMessage(message);
-        }
-
-        [
-            "enterNode",
-            "leaveNode",
-            "downNode",
-            "clickNode",
-            "rightClickNode",
-            "doubleClickNode",
-            "wheelNode",
-        ].forEach((eventType) => graphRenderer.on(eventType, ({ node }) => logEvent(eventType, "node", node)));
-
-        [
-            "downEdge",
-            "clickEdge",
-            "rightClickEdge",
-            "doubleClickEdge",
-            "wheelEdge",
-            "enterEdge",
-            "leaveEdge",
-        ].forEach((eventType) => graphRenderer.on(eventType, ({ edge }) => logEvent(eventType, "edge", edge)));
     };
 
     const openForDocument = ({ summary, entities, url }) => {
@@ -263,37 +226,21 @@ export const configureDetailsDialog = () => {
             }
 
             // Render graph on the newly displayed tab
-            const entitiesAfterShowEvent = (event) => {
-                // prevent internal events from bubbing into dialog closure handler
-                if (event.target !== entitiesElement) {
-                    return;
-                }
-
+            const entitiesAfterShowEvent = addSafeEventListener(entitiesElement, 'sl-after-show', (event) => {
                 const name = detailsDialog.querySelector(`sl-tab[active]`).textContent;
                 const graphElement = detailsDialog.querySelector(`sl-tab-panel[name="${name}"]`).querySelector('.entity-graph');
                 renderGraphByName(graphElement, graph, graphTabMap[name]);
                 graphRenderer.refresh();
-            };
-            entitiesElement.addEventListener('sl-after-show', entitiesAfterShowEvent);
+            });
 
             // stop graph rendering when display is collapsed
-            const entitiesHideEvent = (event) => {
-                // prevent internal events from bubbing into dialog closure handler
-                if (event.target !== entitiesElement) {
-                    return;
-                }
-
+            const entitiesHideEvent = addSafeEventListener(entitiesElement, 'sl-hide', (event) => {
                 graphRenderer?.kill();
                 graphRenderer = null;
-            };
-            entitiesElement.addEventListener('sl-hide', entitiesHideEvent);
+            });
 
             // remove graph-bound events on dialog closure
-            detailsDialog.addEventListener('sl-after-hide', (event) => {
-                if (event.target !== detailsDialog) {
-                    return;
-                }
-
+            addSafeEventListener(detailsDialog, 'sl-after-hide', (event) => {
                 entitiesElement.removeEventListener('sl-after-show', entitiesAfterShowEvent);
                 entitiesElement.removeEventListener('sl-hide', entitiesHideEvent);
             });
@@ -374,3 +321,43 @@ const loadGraph = (graphData) => {
 
     return [graph, graphTabMap];
 };
+
+const defaultLogGraphEvents = (sigmaGraph, sigmaRenderer) => {
+    // non-stage events won't work. Log them all until they do!
+    const logEvent = (event, itemType, item, onMessage = console.log) => {
+        let message = `Event "${event}"`;
+        if (item && itemType) {
+            const label = itemType === "node" ? sigmaGraph.getNodeAttribute(item, "label") : sigmaGraph.getEdgeAttribute(item, "label");
+            message += `, ${itemType} ${label || "with no label"} (id "${item}")`;
+
+            if (itemType === "edge") {
+                message += `, source ${sigmaGraph.getSourceAttribute(item, "label")}, target: ${sigmaGraph.getTargetAttribute(
+                    item,
+                    "label",
+                )}`;
+            }
+        }
+
+        onMessage(message);
+    }
+
+    [
+        "enterNode",
+        "leaveNode",
+        "downNode",
+        "clickNode",
+        "rightClickNode",
+        "doubleClickNode",
+        "wheelNode",
+    ].forEach((eventType) => sigmaRenderer.on(eventType, ({ node }) => logEvent(eventType, "node", node)));
+
+    [
+        "downEdge",
+        "clickEdge",
+        "rightClickEdge",
+        "doubleClickEdge",
+        "wheelEdge",
+        "enterEdge",
+        "leaveEdge",
+    ].forEach((eventType) => sigmaRenderer.on(eventType, ({ edge }) => logEvent(eventType, "edge", edge)));
+}

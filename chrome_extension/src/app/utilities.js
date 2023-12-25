@@ -9,12 +9,15 @@ export const removeAllChildNodes = (parent) => {
     }
 }
 
-export const addSafeEventlistener = (element, eventName, eventHandler) => {
+export const addSafeEventListener = (element, eventName, eventHandler) => {
     element.addEventListener(eventName, (event) => {
         if (event.target !== element) {
             return;
         }
 
         eventHandler(event);
-    })
+    });
+
+    // return to capture inline methods
+    return eventHandler;
 };

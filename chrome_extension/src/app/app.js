@@ -1,4 +1,4 @@
-import { getApiHost, addSafeEventlistener } from "./utilities";
+import { getApiHost, addSafeEventListener } from "./utilities";
 import { configureDetailsDialog } from "./details_dialog";
 import { configureSettingsDialog } from './settings_dialog';
 import { createResultsTable, createTasksTable } from "./tables";
@@ -18,7 +18,7 @@ const init = async () => {
     const openForDocument = configureDetailsDialog();
     await configureSettingsDialog();
 
-    addSafeEventlistener(resultsTable, 'cellClick', async (e) => {
+    addSafeEventListener(resultsTable, 'cellClick', async (e) => {
         const rowHash = e.detail.row.hash;
         const rowUrl = e.detail.row.url;
 
