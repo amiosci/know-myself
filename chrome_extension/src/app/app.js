@@ -16,7 +16,7 @@ const init = async () => {
     const resultsTable = createResultsTable(apiHost);
 
     const openForDocument = configureDetailsDialog();
-    configureSettingsDialog();
+    await configureSettingsDialog();
 
     addSafeEventlistener(resultsTable, 'cellClick', async (e) => {
         const rowHash = e.detail.row.hash;

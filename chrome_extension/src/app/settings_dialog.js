@@ -1,4 +1,4 @@
-export const configureSettingsDialog = () => {
+export const configureSettingsDialog = async () => {
     const settingsDialog = document.querySelector('.settings-dialog');
     const settingsApiHost = settingsDialog.querySelector('.settings-api-host');
 
