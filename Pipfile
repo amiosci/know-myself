@@ -27,6 +27,7 @@ tiktoken = "*"
 kor = "*"
 markdownify = "*"
 flask = {extras = ["async"], version = "*"}
+pillow = "*"
 
 [dev-packages]
 
