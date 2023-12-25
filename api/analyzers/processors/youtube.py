@@ -14,14 +14,11 @@ if __name__ == "__main__":
     sys.path.append(api_root)
 
 from analyzers import utils
-from loaders import loaders
+from doc_store import doc_loader
 
 
 def interrogate_youtube_video(url: str, questions: list[str]):
-    loader = loaders.locate(url)
-    if loader is None:
-        raise RuntimeError("Cannot process")
-    docs = loader.load()
+    docs = doc_loader.get_url_documents(url)
 
     # Combine docs
     combined_docs = [doc.page_content for doc in docs]
@@ -61,8 +58,8 @@ def interrogate_youtube_video(url: str, questions: list[str]):
     responses = []
     for question in questions:
         response = qa_chain({"query": "What is this video about?"})
-        responses.append((question, response.get('result', None)))
-        
+        responses.append((question, response.get("result", None)))
+
     return responses
 
 
@@ -71,5 +68,5 @@ if __name__ == "__main__":
         "https://youtube.com/shorts/IicbiwTAslE?si=H1qA7---M4ZiuHTc",
         ["What is this video about?"],
     ):
-        print(f'{question}')
-        print(f'\t{response}')
+        print(f"{question}")
+        print(f"\t{response}")
