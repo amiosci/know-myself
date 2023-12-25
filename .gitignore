@@ -10,3 +10,8 @@ chrome_extension/knowmyself
 
 # firefox output
 chrome_extension/release.zip
+
+# arbitrary directories used for various analyzer tests
+# TODO: Use a formal sandbox folder
+vector_store*
+YouTube*

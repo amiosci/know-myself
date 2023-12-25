@@ -28,6 +28,13 @@ kor = "*"
 markdownify = "*"
 flask = {extras = ["async"], version = "*"}
 pillow = "*"
+transformers = "*"
+torch = "*"
+yt-dlp = "*"
+pydub = "*"
+librosa = "*"
+sentence-transformers = "*"
+chromadb = "*"
 
 [dev-packages]
 

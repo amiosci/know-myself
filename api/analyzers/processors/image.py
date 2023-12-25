@@ -1,5 +1,13 @@
 from langchain_core.messages import HumanMessage
 
+# only relevant while running script for testing purposes
+if __name__ == "__main__":
+    import os
+    import sys
+
+    api_root = os.path.abspath(os.path.join(__file__, "../../.."))
+    sys.path.append(api_root)
+
 from analyzers import utils
 
 
@@ -50,7 +58,7 @@ if __name__ == "__main__":
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_str
 
-    file_path = pathlib.Path(os.path.dirname(__file__)) / "test_img.jpeg"
+    file_path = pathlib.Path(os.path.dirname(__file__)) / "test_data/qa_img.jpeg"
     pil_image = Image.open(file_path)
 
     image_b64 = _convert_to_base64(pil_image)

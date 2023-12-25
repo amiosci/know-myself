@@ -1,3 +1,6 @@
+import abc
+import tempfile
+
 from urllib.parse import urlparse, ParseResult
 from langchain.docstore.document import Document
 from langchain.document_loaders import PyPDFLoader
@@ -5,8 +8,9 @@ from langchain.document_loaders import ArxivLoader
 from langchain.document_loaders import SeleniumURLLoader
 from langchain.text_splitter import NLTKTextSplitter
 from langchain.document_transformers import Html2TextTransformer
-
-import abc
+from langchain.document_loaders.blob_loaders.youtube_audio import YoutubeAudioLoader
+from langchain.document_loaders.generic import GenericLoader
+from langchain.document_loaders.parsers.audio import OpenAIWhisperParserLocal
 
 
 def _get_url_extension(url: ParseResult) -> str:
@@ -99,17 +103,37 @@ class WebPageDocumentLoader(DocumentLoader):
         return texts
 
 
+class YouTubeVideoDocumentLoader(DocumentLoader):
+    @staticmethod
+    def can_load(url: ParseResult) -> bool:
+        is_youtube = url.netloc in ["www.youtube.com", "youtube.com"]
+        valid_schemes = ["http", "https"]
+        return (url.scheme in valid_schemes) and is_youtube
+
+    def load(self) -> list[Document]:
+        with tempfile.TemporaryDirectory() as d:
+            loader = GenericLoader(
+                YoutubeAudioLoader([self.target_url], d), OpenAIWhisperParserLocal()
+            )
+            return loader.load()
+
+
 # TODO: Define by namespace lookup
 _LOADERS = [
     ArxivDocumentLoader,
     PDFDocumentLoader,
+    YouTubeVideoDocumentLoader,
+]
+
+_FALLBACK_LOADERS = [
     WebPageDocumentLoader,
+    DefaultDocumentLoader,
 ]
 
 
 def locate(url: str) -> DocumentLoader | None:
     parsed_url = urlparse(url)
-    loaders = [x for x in _LOADERS if x.can_load(parsed_url)] + [DefaultDocumentLoader]
+    loaders = [x for x in (_LOADERS + _FALLBACK_LOADERS) if x.can_load(parsed_url)]
     for loader in loaders:
         print(f"testing {loader.__name__}")
         if loader.can_load(parsed_url):
@@ -138,3 +162,13 @@ if __name__ == "__main__":
     ]
     for arxiv_url in arxiv_urls:
         confirm_loader_functionality(arxiv_url, ArxivDocumentLoader)
+
+    youtube_urls = [
+        "https://youtube.com/shorts/IicbiwTAslE?si=H1qA7---M4ZiuHTc",
+        # Too large for GPU under standard usage
+        # Evaluate PowerInfer, and the like
+        # "https://www.youtube.com/watch?v=edyqWHRgSX8",
+    ]
+
+    for youtube_url in youtube_urls:
+        confirm_loader_functionality(youtube_url, YouTubeVideoDocumentLoader)
