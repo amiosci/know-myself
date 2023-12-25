@@ -51,6 +51,7 @@ export const createTasksTable = (apiHost) => {
                         'url: string',
                         'hash: string',
                         'task_name: string',
+                        'task_id: string',
                         'status: string'
                     ]
                 }),

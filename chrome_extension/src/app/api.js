@@ -19,3 +19,13 @@ export const getDocumentEntities = async (documentHash) => {
     const graphData = await getEntitiesResponse.json();
     return graphData;
 };
+
+export const getTaskMetrics = async (taskId) => {
+    const apiHost = await getApiHost();
+    const getTaskMetricsResponse = await fetch(`${apiHost}/tasks/${taskId}/metrics`, {
+        method: 'GET'
+    });
+
+    const taskMetrics = await getTaskMetricsResponse.json();
+    return taskMetrics;;
+};

@@ -2,17 +2,20 @@ import { getApiHost, addSafeEventListener } from "./utilities";
 import { configureDetailsDialog } from "./details_dialog";
 import { configureSettingsDialog } from './settings_dialog';
 import { createResultsTable, createTasksTable } from "./tables";
-import { getDocumentSummary, getDocumentEntities } from "./api";
+import { getDocumentSummary, getDocumentEntities, getTaskMetrics } from "./api";
 
 const init = async () => {
     const apiHost = await getApiHost();
     const resultsTable = createResultsTable(apiHost);
     const tasksTable = createTasksTable(apiHost);
 
-    addSafeEventListener(tasksTable, 'cellClick', (e) => {
+    addSafeEventListener(tasksTable, 'cellClick', async (e) => {
         const rowHash = e.detail.row.hash;
         const rowUrl = e.detail.row.url;
         const rowStatus = e.detail.row.status;
+        const rowTaskId = e.detail.row.taskId;
+
+        const taskMetrics = await getTaskMetrics(rowTaskId);
     });
 
     const openForDocument = configureDetailsDialog();
