@@ -9,7 +9,7 @@ const init = async () => {
     const resultsTable = createResultsTable(apiHost);
     const tasksTable = createTasksTable(apiHost);
 
-    tasksTable.addEventListener('cellClick', (e) => {
+    addSafeEventListener(tasksTable, 'cellClick', (e) => {
         const rowHash = e.detail.row.hash;
         const rowUrl = e.detail.row.url;
         const rowStatus = e.detail.row.status;
