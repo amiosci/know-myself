@@ -10,14 +10,16 @@ export const removeAllChildNodes = (parent) => {
 };
 
 export const addSafeEventListener = (element, eventName, eventHandler) => {
-    element.addEventListener(eventName, (event) => {
+    const safeEvent = (event) => {
         if (event.target !== element) {
             return;
         }
 
         eventHandler(event);
-    });
+    };
+
+    element.addEventListener(eventName, safeEvent);
 
     // return to capture inline methods
-    return eventHandler;
+    return safeEvent;
 };
