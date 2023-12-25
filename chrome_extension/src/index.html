@@ -51,7 +51,12 @@
     }
 
     .entity-graph {
-      height: 50vw;
+      height: 50vh;
+      width: 50vw;
+      position: relative;
+      display: inline-block;
+      padding: 0;
+      margin: 0;
       border: 1px solid lightgray;
     }
 
@@ -122,6 +127,14 @@
       </div>
     </div>
 </body>
+
+<!-- Graph context menu -->
+<sl-menu class="graph-context-menu" style="max-width: 200px; visibility: hidden;">
+  <sl-menu-item value="documents">Locate Documents</sl-menu-item>
+  <sl-divider></sl-divider>
+  <sl-menu-item value="update">Update Relation</sl-menu-item>
+  <sl-menu-item value="delete">Remove Relation</sl-menu-item>
+</sl-menu>
 
 <!-- View Document Summary Dialog -->
 <sl-dialog label="Document Details" class="document-dialog" style="--width: 70vw;">
