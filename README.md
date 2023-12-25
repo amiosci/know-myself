@@ -12,20 +12,27 @@ Current integrations support summarization.
 
 #### Desired/In Progress pipeline integrations
 
-* Entity Relation Extraction with storage into graph DB
-* Knowledge graph generation
-  * "Encourage hallucinations -> fact check entity relations" loops to discover novel connections?
-* Multi-modal integrations over content
-  * Capture non-text content/use multi-modal extraction approaches
+[] Knowledge graph generation
+  [x] Entity Relation Extraction with persistence
+  [] "Encourage hallucinations -> fact check entity relations" loops to discover novel connections?
+[] Multi-modal integrations over content
+  [] Capture non-text content/use multi-modal extraction approaches
+  [x] Support image QA
 
 #### Desired/In Progress web extension integrations
 
-* Annotating tabs by context-menu over selected text
-* Bookmark folder watching, in addition to reading list
-* Firefox integration (builder already supports)
-* Conversational web browsing
-  * Asking for supplementary details
-  * Fact checking the selection
+[] Annotating tabs by context-menu over selected text
+[] Bookmark folder watching, in addition to reading list
+[] Firefox integration (builder already supports)
+[] Knowledge graph integration
+  [x] Expose entity relations
+  [x] Support graph node click events
+  [x] Support graph context menu
+  [] Find supporting/contradicting documents
+[] Conversational web browsing
+  [] Asking for supplementary details
+  [] Fact checking the selection
+  [] Support realm-based personas
 
 ### Current recommended usage
 
