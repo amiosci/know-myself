@@ -5,7 +5,6 @@ export const createResultsTable = (apiHost) => {
             return {
                 sortMode: 'one',
                 editing: true,
-                // selection: true,
                 keyboardNavigation: true,
                 dataSource: new Smart.DataAdapter({
                     dataSource: {

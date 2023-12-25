@@ -2,18 +2,18 @@ import { getApiHost, addSafeEventListener } from "./utilities";
 import { configureDetailsDialog } from "./details_dialog";
 import { configureSettingsDialog } from './settings_dialog';
 import { createResultsTable, createTasksTable } from "./tables";
+import { getDocumentSummary, getDocumentEntities } from "./api";
 
 const init = async () => {
     const apiHost = await getApiHost();
-
+    const resultsTable = createResultsTable(apiHost);
     const tasksTable = createTasksTable(apiHost);
+
     tasksTable.addEventListener('cellClick', (e) => {
         const rowHash = e.detail.row.hash;
         const rowUrl = e.detail.row.url;
         const rowStatus = e.detail.row.status;
     });
-
-    const resultsTable = createResultsTable(apiHost);
 
     const openForDocument = configureDetailsDialog();
     await configureSettingsDialog();
@@ -22,19 +22,8 @@ const init = async () => {
         const rowHash = e.detail.row.hash;
         const rowUrl = e.detail.row.url;
 
-        // populate summary content
-        const getSummaryResponse = await fetch(`${apiHost}/summary/${rowHash}`, {
-            method: 'GET'
-        });
-
-        const summaryResponse = await getSummaryResponse.json();
-
-        // populate entities graph
-        const getEntitiesResponse = await fetch(`${apiHost}/entities/${rowHash}`, {
-            method: 'GET'
-        });
-
-        const graphData = await getEntitiesResponse.json();
+        const summaryResponse = await getDocumentSummary(rowHash);
+        const graphData = await getDocumentEntities(rowHash);
 
         openForDocument({
             summary: summaryResponse.summary,
