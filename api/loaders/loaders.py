@@ -7,6 +7,7 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import ArxivLoader
 from langchain.document_loaders import SeleniumURLLoader
 from langchain.text_splitter import NLTKTextSplitter
+from langchain.document_loaders import WikipediaLoader
 from langchain.document_transformers import Html2TextTransformer
 from langchain.document_loaders.blob_loaders.youtube_audio import YoutubeAudioLoader
 from langchain.document_loaders.generic import GenericLoader
@@ -44,6 +45,28 @@ class DefaultDocumentLoader(DocumentLoader):
 
     def load(self) -> list[Document]:
         return []
+
+
+class WikipediaDocumentLoader(DocumentLoader):
+    @staticmethod
+    def can_load(url: ParseResult) -> bool:
+        valid_site = url.netloc in ["wikipedia.org", "en.wikipedia.org"]
+        valid_path_prefixes = ["/wiki/"]
+        has_valid_path_prefix = any(url.path.startswith(x) for x in valid_path_prefixes)
+
+        return valid_site and has_valid_path_prefix
+
+    def load(self) -> list[Document]:
+        query = self._load_query()
+        if not query:
+            raise ValueError("Invalid Wikipedia URL requested")
+
+        loader = WikipediaLoader(query="Walt_Disney")
+        return loader.load()
+
+    def _load_query(self) -> str:
+        # https://en.wikipedia.org/wiki/Walt_Disney
+        return self.url.path.split("/")[-1]
 
 
 class ArxivDocumentLoader(DocumentLoader):
@@ -119,13 +142,14 @@ class YouTubeVideoDocumentLoader(DocumentLoader):
 
 
 # TODO: Define by namespace lookup
-_LOADERS = [
+_ORDERED_LOADERS = [
+    # site specific
     ArxivDocumentLoader,
-    PDFDocumentLoader,
+    WikipediaDocumentLoader,
     YouTubeVideoDocumentLoader,
-]
-
-_FALLBACK_LOADERS = [
+    # file specific
+    PDFDocumentLoader,
+    # Fallback
     WebPageDocumentLoader,
     DefaultDocumentLoader,
 ]
@@ -133,11 +157,9 @@ _FALLBACK_LOADERS = [
 
 def locate(url: str) -> DocumentLoader | None:
     parsed_url = urlparse(url)
-    loaders = [x for x in (_LOADERS + _FALLBACK_LOADERS) if x.can_load(parsed_url)]
-    for loader in loaders:
-        print(f"testing {loader.__name__}")
-        if loader.can_load(parsed_url):
-            return loader(parsed_url)
+    loader = next((x for x in _ORDERED_LOADERS if x.can_load(parsed_url)), None)
+    if loader:
+        return loader(parsed_url)
 
     return None
 
@@ -153,22 +175,25 @@ if __name__ == "__main__":
         docs = loader.load()
         assert len(docs) > 0
 
-    webpage_url = "https://docs.python.org/3/library/urllib.parse.html"
-    confirm_loader_functionality(webpage_url, WebPageDocumentLoader)
+    # webpage_url = "https://docs.python.org/3/library/urllib.parse.html"
+    # confirm_loader_functionality(webpage_url, WebPageDocumentLoader)
 
-    arxiv_urls = [
-        "https://arxiv.org/pdf/2305.05003.pdf",
-        "https://arxiv.org/abs/2305.05003",
-    ]
-    for arxiv_url in arxiv_urls:
-        confirm_loader_functionality(arxiv_url, ArxivDocumentLoader)
+    # arxiv_urls = [
+    #     "https://arxiv.org/pdf/2305.05003.pdf",
+    #     "https://arxiv.org/abs/2305.05003",
+    # ]
+    # for arxiv_url in arxiv_urls:
+    #     confirm_loader_functionality(arxiv_url, ArxivDocumentLoader)
 
-    youtube_urls = [
-        "https://youtube.com/shorts/IicbiwTAslE?si=H1qA7---M4ZiuHTc",
-        # Too large for GPU under standard usage
-        # Evaluate PowerInfer, and the like
-        # "https://www.youtube.com/watch?v=edyqWHRgSX8",
-    ]
+    # youtube_urls = [
+    #     "https://youtube.com/shorts/IicbiwTAslE?si=H1qA7---M4ZiuHTc",
+    #     # Too large for GPU under standard usage
+    #     # Evaluate PowerInfer, and the like
+    #     # "https://www.youtube.com/watch?v=edyqWHRgSX8",
+    # ]
 
-    for youtube_url in youtube_urls:
-        confirm_loader_functionality(youtube_url, YouTubeVideoDocumentLoader)
+    # for youtube_url in youtube_urls:
+    #     confirm_loader_functionality(youtube_url, YouTubeVideoDocumentLoader)
+
+    # wikipedia_url = "https://en.wikipedia.org/wiki/Walt_Disney"
+    # confirm_loader_functionality(wikipedia_url, WikipediaDocumentLoader)
