@@ -1,4 +1,5 @@
 import abc
+import re
 import tempfile
 
 from urllib.parse import urlparse, ParseResult
@@ -6,8 +7,9 @@ from langchain.docstore.document import Document
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import ArxivLoader
 from langchain.document_loaders import SeleniumURLLoader
-from langchain.text_splitter import NLTKTextSplitter
+from langchain.document_loaders import HNLoader
 from langchain.document_loaders import WikipediaLoader
+from langchain.text_splitter import NLTKTextSplitter
 from langchain.document_transformers import Html2TextTransformer
 from langchain.document_loaders.blob_loaders.youtube_audio import YoutubeAudioLoader
 from langchain.document_loaders.generic import GenericLoader
@@ -45,6 +47,22 @@ class DefaultDocumentLoader(DocumentLoader):
 
     def load(self) -> list[Document]:
         return []
+
+
+class HackerNewsDocumentLoader(DocumentLoader):
+    @staticmethod
+    def can_load(url: ParseResult) -> bool:
+        print(url)
+        # https://news.ycombinator.com/item?id=34817881
+        valid_site = url.netloc in ["news.ycombinator.com"]
+        has_valid_path = url.path == "/item"
+        has_id = re.match(r'^id=[0-9]+$', url.query) is not None
+
+        return valid_site and has_valid_path and has_id
+
+    def load(self) -> list[Document]:
+        loader = HNLoader(self.target_url)
+        return loader.load()
 
 
 class WikipediaDocumentLoader(DocumentLoader):
@@ -146,6 +164,7 @@ _ORDERED_LOADERS = [
     # site specific
     ArxivDocumentLoader,
     WikipediaDocumentLoader,
+    HackerNewsDocumentLoader,
     YouTubeVideoDocumentLoader,
     # file specific
     PDFDocumentLoader,
@@ -197,3 +216,6 @@ if __name__ == "__main__":
 
     # wikipedia_url = "https://en.wikipedia.org/wiki/Walt_Disney"
     # confirm_loader_functionality(wikipedia_url, WikipediaDocumentLoader)
+
+    hn_url = "https://news.ycombinator.com/item?id=34817881"
+    confirm_loader_functionality(hn_url, HackerNewsDocumentLoader)
