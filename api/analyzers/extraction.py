@@ -5,6 +5,14 @@ from collections.abc import Iterable
 
 import re
 
+# only relevant while running script for testing purposes
+if __name__ == "__main__":
+    import os
+    import sys
+
+    api_root = os.path.abspath(os.path.join(__file__, "../.."))
+    sys.path.append(api_root)
+
 from analyzers import utils
 
 
@@ -173,7 +181,7 @@ if __name__ == "__main__":
     from langchain.text_splitter import TokenTextSplitter
     import asyncio
 
-    docs = WikipediaLoader(query="Walt Disney").load()
+    docs = WikipediaLoader(query="Walt_Disney").load()
     text_splitter = TokenTextSplitter(chunk_size=2048, chunk_overlap=24)
     split_docs = text_splitter.split_documents(docs)
 
