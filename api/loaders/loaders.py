@@ -194,28 +194,28 @@ if __name__ == "__main__":
         docs = loader.load()
         assert len(docs) > 0
 
-    # webpage_url = "https://docs.python.org/3/library/urllib.parse.html"
-    # confirm_loader_functionality(webpage_url, WebPageDocumentLoader)
+    webpage_url = "https://docs.python.org/3/library/urllib.parse.html"
+    confirm_loader_functionality(webpage_url, WebPageDocumentLoader)
 
-    # arxiv_urls = [
-    #     "https://arxiv.org/pdf/2305.05003.pdf",
-    #     "https://arxiv.org/abs/2305.05003",
-    # ]
-    # for arxiv_url in arxiv_urls:
-    #     confirm_loader_functionality(arxiv_url, ArxivDocumentLoader)
+    arxiv_urls = [
+        "https://arxiv.org/pdf/2305.05003.pdf",
+        "https://arxiv.org/abs/2305.05003",
+    ]
+    for arxiv_url in arxiv_urls:
+        confirm_loader_functionality(arxiv_url, ArxivDocumentLoader)
 
-    # youtube_urls = [
-    #     "https://youtube.com/shorts/IicbiwTAslE?si=H1qA7---M4ZiuHTc",
-    #     # Too large for GPU under standard usage
-    #     # Evaluate PowerInfer, and the like
-    #     # "https://www.youtube.com/watch?v=edyqWHRgSX8",
-    # ]
+    youtube_urls = [
+        "https://youtube.com/shorts/IicbiwTAslE?si=H1qA7---M4ZiuHTc",
+        # Too large for GPU under standard usage
+        # Evaluate PowerInfer, and the like
+        # "https://www.youtube.com/watch?v=edyqWHRgSX8",
+    ]
 
-    # for youtube_url in youtube_urls:
-    #     confirm_loader_functionality(youtube_url, YouTubeVideoDocumentLoader)
+    for youtube_url in youtube_urls:
+        confirm_loader_functionality(youtube_url, YouTubeVideoDocumentLoader)
 
-    # wikipedia_url = "https://en.wikipedia.org/wiki/Walt_Disney"
-    # confirm_loader_functionality(wikipedia_url, WikipediaDocumentLoader)
+    wikipedia_url = "https://en.wikipedia.org/wiki/Walt_Disney"
+    confirm_loader_functionality(wikipedia_url, WikipediaDocumentLoader)
 
     hn_url = "https://news.ycombinator.com/item?id=34817881"
     confirm_loader_functionality(hn_url, HackerNewsDocumentLoader)
