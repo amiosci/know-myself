@@ -177,7 +177,7 @@ _ORDERED_LOADERS = [
 def locate(url: str) -> DocumentLoader | None:
     parsed_url = urlparse(url)
     loader = next((x for x in _ORDERED_LOADERS if x.can_load(parsed_url)), None)
-    if loader:
+    if loader is not None:
         return loader(parsed_url)
 
     return None
