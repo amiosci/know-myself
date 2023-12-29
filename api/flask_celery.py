@@ -28,8 +28,8 @@ def process_content(self, hash: str, url: str):
     # register all tasks to run in group
     group(
         [
-            analyzer_tasks.summarize_content.si(hash),  # type: ignore
-            analyzer_tasks.extract_entity_relations.si(hash),  # type: ignore
+            analyzer_tasks.summarize_content.si(hash, url),  # type: ignore
+            analyzer_tasks.extract_entity_relations.si(hash, url),  # type: ignore
         ]
     ).apply_async()
 
