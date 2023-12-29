@@ -52,7 +52,6 @@ class DefaultDocumentLoader(DocumentLoader):
 class HackerNewsDocumentLoader(DocumentLoader):
     @staticmethod
     def can_load(url: ParseResult) -> bool:
-        print(url)
         # https://news.ycombinator.com/item?id=34817881
         valid_site = url.netloc in ["news.ycombinator.com"]
         has_valid_path = url.path == "/item"
