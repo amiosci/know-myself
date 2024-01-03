@@ -17,5 +17,6 @@
         "**/node_modules": true,
         "**/.nyc_output": true
     },
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "editor.formatOnSave": true
 }
