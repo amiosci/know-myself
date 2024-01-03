@@ -1,10 +1,11 @@
 from celery import shared_task, group
 from celery.canvas import Signature
 from celery.utils.log import get_logger
+from typing import Callable
 
-from typing import Callable, Any
 from analyzers import tasks as analyzer_tasks
 from services.persist import task
+import constants
 
 logger = get_logger(__name__)
 
@@ -33,7 +34,7 @@ def process_content(self, hash: str):
         _register_task(
             hash,
             self.request.id,
-            "Summarize",
+            constants.SUMMARY_TASK,
             analyzer_tasks.summarize_content.si,  # type: ignore
         )
     )
@@ -41,7 +42,7 @@ def process_content(self, hash: str):
         _register_task(
             hash,
             self.request.id,
-            "Extract Relations",
+            constants.ENTITIES_TASK,
             analyzer_tasks.extract_entity_relations.si,  # type: ignore
         )
     )

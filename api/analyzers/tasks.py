@@ -3,6 +3,7 @@ import asyncio
 from celery import shared_task
 from celery.utils.log import get_logger
 from services.persist import task
+import constants
 
 from content_workflow import (
     SummarizeContent,
@@ -58,7 +59,7 @@ def summarize_content(self, hash: str):
     _run_celery_analyzer_task(
         Context(hash=hash),
         self.request.id,
-        "Summarize",
+        constants.SUMMARY_TASK,
         SummarizeContent,
     )
 
@@ -68,6 +69,6 @@ def extract_entity_relations(self, hash: str):
     _run_celery_analyzer_task(
         Context(hash=hash),
         self.request.id,
-        "Extract Relations",
+        constants.ENTITIES_TASK,
         ExtractContentRelations,
     )
