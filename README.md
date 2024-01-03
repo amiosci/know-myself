@@ -15,9 +15,10 @@ Current integrations support summarization.
 [] Knowledge graph generation
   [x] Entity Relation Extraction with persistence
   [] "Encourage hallucinations -> fact check entity relations" loops to discover novel connections?
-[] Multi-modal integrations over content
-  [] Capture non-text content/use multi-modal extraction approaches
+[-] Multi-modal integrations over content
+  [x] Capture non-text content/use multi-modal extraction approaches
   [x] Support image QA
+  [] Consume multi-modal
 
 #### Desired/In Progress web extension integrations
 
@@ -85,6 +86,3 @@ By using a network-addressible backends (Redis, Postgres, DocumentStore), this c
 `cd chrome_extension; npm run start:firefox`
 
 **Not implemented**
-
-#### Cleanup TODO
-[x] Trim exported `requirements.txt`
