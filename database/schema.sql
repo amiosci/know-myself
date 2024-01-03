@@ -1,10 +1,14 @@
 create schema genai;
+
 create schema genai_ops;
+
 create schema kms;
 
 CREATE TABLE IF NOT EXISTS kms.document_paths (
     hash char(64) primary key,
-    loader_spec json,
+    loader_spec jsonb NOT NULL,
+    metadata jsonb NOT NULL DEFAULT '{}' :: jsonb,
+    name text,
     url text
 );
 

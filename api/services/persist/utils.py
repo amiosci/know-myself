@@ -1,9 +1,14 @@
+import json
 import os
 import psycopg2
 from psycopg2.extras import Json
 from psycopg2.extensions import register_adapter
 
+dumps_lambda = lambda x: json.dumps(x, ensure_ascii=False)
+
+# register_adapter(dict, lambda x: Json(x, dumps=dumps_lambda))
 register_adapter(dict, Json)
+register_adapter(list, Json)
 
 _HOME = os.environ["HOME"]
 _PASSWD_FILE = f"{_HOME}/.dev_secrets/knowledge_worker_postgres_passwd"

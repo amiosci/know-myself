@@ -1,6 +1,7 @@
 import dataclasses
+import json
 from psycopg2.extras import RealDictCursor
-from psycopg2.errors import UniqueViolation # type: ignore
+from psycopg2.errors import UniqueViolation  # type: ignore
 
 from services.persist.utils import get_connection
 
@@ -40,12 +41,66 @@ def register_document(
         with conn.cursor() as curs:
             try:
                 curs.execute(
-                    "INSERT INTO kms.document_paths (hash, url, loader_spec) VALUES (%s, %s, %s)",
-                    ((hash, url, loader_spec)),
+                    "INSERT INTO kms.document_paths (hash, url, loader_spec, metadata) "
+                    "VALUES (%s, %s, %s, %s)",
+                    (
+                        (
+                            hash,
+                            url,
+                            loader_spec,
+                            {
+                                "annotations": [],
+                            },
+                        )
+                    ),
                 )
             except UniqueViolation:
                 if not handle_exists:
                     raise
+
+
+def get_document_annotations(hash: str) -> list[str]:
+    with get_connection() as conn:
+        with conn.cursor() as curs:
+            curs.execute(
+                "SELECT metadata->>'annotations' from kms.document_paths where hash = %s",
+                (hash,),
+            )
+            return curs.fetchall()
+
+
+def add_document_annotation(hash: str, annotation: str) -> None:
+    with get_connection() as conn:
+        with conn.cursor() as curs:
+            formatted_annotation = json.JSONEncoder().encode(annotation).strip('"')
+            try:
+                curs.execute(
+                    "UPDATE kms.document_paths SET "
+                    "metadata=jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
+                    "|| %s::jsonb, true) where hash = %s",
+                    (
+                        [formatted_annotation],
+                        hash,
+                    ),
+                )
+            except:
+                print(curs.query)
+                raise
+
+
+def remove_document_annotation(hash: str, annotation: str) -> None:
+    with get_connection() as conn:
+        with conn.cursor() as curs:
+            formatted_annotation = json.JSONEncoder().encode(annotation).strip('"')
+            curs.execute(
+                "UPDATE kms.document_paths SET "
+                "metadata=jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
+                "- %s, true) where hash = %s",
+                (
+                    [formatted_annotation],
+                    hash,
+                ),
+            )
 
 
 @dataclasses.dataclass

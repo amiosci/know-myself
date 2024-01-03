@@ -18,7 +18,7 @@ class GenerateSummaryRequest:
     url: str
     title: str
 
-    force_process: bool = True
+    force_process: bool = False
 
 
 def register_routes(app: Flask):
