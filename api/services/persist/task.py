@@ -92,7 +92,7 @@ class ProcessTaskUpdater:
             with conn.cursor() as curs:
                 print(f"setting status {status}")
                 curs.execute(
-                    "UPDATE genai.process_tasks SET status=%s WHERE hash=%s AND task_name=%s",
+                    "UPDATE genai.process_tasks SET status=%s WHERE hash=%s AND task_id=%s",
                     ((status, self.hash, self.task_id)),
                 )
 
