@@ -1,159 +1,156 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="smart-webcomponents.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="shoelace_dist/themes/light.css"
+    />
 
-<head>
+    <script
+      type="text/javascript"
+      type="module"
+      src="smart-webcomponents.js"
+    ></script>
+    <script
+      type="text/javascript"
+      type="module"
+      src="shoelace.js"
+      data-shoelace="shoelace_dist"
+    ></script>
 
-  <link rel="stylesheet" type="text/css" href="smart-webcomponents.css" />
-  <link rel="stylesheet" type="text/css" href="shoelace_dist/themes/light.css" />
+    <script type="module" src="app.js"></script>
 
-  <script type="text/javascript" type="module" src="smart-webcomponents.js"></script>
-  <script type="text/javascript" type="module" src="shoelace.js" data-shoelace="shoelace_dist"></script>
+    <style>
+      .menu-header {
+        display: flex;
+        flex-direction: row;
+      }
 
-  <script type="module" src="app.js"></script>
+      .menu-header-actions {
+        flex: 1;
+        justify-content: end;
+        align-items: center;
+        flex-shrink: 0;
+        display: flex;
+      }
 
-  <style>
-    .menu-header {
-      display: flex;
-      flex-direction: row;
-    }
+      .page-content-main {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        overflow: auto;
 
-    .menu-header-actions {
-      flex: 1;
-      justify-content: end;
-      align-items: center;
-      flex-shrink: 0;
-      display: flex;
-    }
+        display: flex;
+        flex-direction: column;
+      }
 
-    .page-content-main {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      overflow: auto;
+      .settings-open {
+        font-size: 1.5rem;
+      }
 
-      display: flex;
-      flex-direction: column;
-    }
+      .content-container {
+        margin: 1rem;
+      }
 
-    .settings-open {
-      font-size: 1.5rem;
-    }
+      .page-segment {
+        height: 100%;
+        flex: var(--segment-width, 1);
+      }
 
-    .content-container {
-      margin: 1rem;
-    }
+      .entity-graph {
+        height: 50vh;
+        width: 50vw;
+        position: relative;
+        display: inline-block;
+        padding: 0;
+        margin: 0;
+        border: 1px solid lightgray;
+      }
 
-    .page-segment {
-      height: 100%;
-      flex: var(--segment-width, 1);
-    }
+      .summary-content {
+        font-size: 1.2rem;
+      }
 
-    .entity-graph {
-      height: 50vh;
-      width: 50vw;
-      position: relative;
-      display: inline-block;
-      padding: 0;
-      margin: 0;
-      border: 1px solid lightgray;
-    }
+      .floating-toolbar {
+        display: flex;
+        position: fixed;
+        top: 0;
+        right: 1rem;
+        z-index: 10;
+        border-bottom-left-radius: calc(var(--docs-border-radius) * 2);
+        border-bottom-right-radius: calc(var(--docs-border-radius) * 2);
+        padding: 0.125rem 0.25rem;
+        font-size: 2.5rem;
+      }
+    </style>
 
-    .summary-content {
-      font-size: 1.2rem;
-    }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    .floating-toolbar {
-      display: flex;
-      position: fixed;
-      top: 0;
-      right: 1rem;
-      z-index: 10;
-      border-bottom-left-radius: calc(var(--docs-border-radius) * 2);
-      border-bottom-right-radius: calc(var(--docs-border-radius) * 2);
-      padding: 0.125rem 0.25rem;
-      font-size: 2.5rem;
-    }
-  </style>
+    <title>Know Myself</title>
+  </head>
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <body class="viewport">
+    <!-- Main content -->
+    <div class="page-content-main">
+      <div class="content-container">
+        <!-- page header -->
+        <div class="menu-header">
+          <h2>Know Myself</h2>
 
-  <title>Know Myself</title>
-</head>
+          <div class="menu-header-actions">
+            <sl-icon-button class="settings-open" name="gear">
+              Open Settings
+            </sl-icon-button>
+          </div>
+        </div>
+        <sl-divider style="--spacing: 2rem"></sl-divider>
+        <!-- main content -->
+        <div class="content-container">
+          <sl-tab-group placement="start">
+            <sl-tab slot="nav" panel="results">Results</sl-tab>
+            <sl-tab slot="nav" panel="tasks">Processing Queue</sl-tab>
 
-<body class="viewport">
-  <!-- Main content -->
-  <div class="page-content-main">
-    <div class="content-container">
-      <!-- page header -->
-      <div class="menu-header">
-        <h2>Know Myself</h2>
+            <sl-tab-panel name="results">
+              <div class="content-container">
+                <sl-breadcrumb>
+                  <sl-breadcrumb-item>Home</sl-breadcrumb-item>
+                </sl-breadcrumb>
+              </div>
+              <smart-table
+                page-size="10"
+                column-menu
+                paging
+                filtering
+                sortable
+                class="results-table"
+              >
+              </smart-table>
+            </sl-tab-panel>
 
-        <div class="menu-header-actions">
-          <sl-icon-button class="settings-open" name="gear">
-            Open Settings
-          </sl-icon-button>
+            <sl-tab-panel name="tasks">
+              <div class="content-container">
+                <sl-breadcrumb>
+                  <sl-breadcrumb-item>Home</sl-breadcrumb-item>
+                </sl-breadcrumb>
+              </div>
+              <smart-table
+                page-size="10"
+                column-menu
+                paging
+                filtering
+                sortable
+                class="tasks-table"
+              >
+              </smart-table>
+            </sl-tab-panel>
+          </sl-tab-group>
         </div>
       </div>
-      <sl-divider style="--spacing: 2rem;"></sl-divider>
-      <!-- main content -->
-      <div class="content-container">
-        <sl-tab-group placement="start">
-          <sl-tab slot="nav" panel="results">Results</sl-tab>
-          <sl-tab slot="nav" panel="tasks">Processing Queue</sl-tab>
-
-          <sl-tab-panel name="results">
-            <div class="content-container">
-              <sl-breadcrumb>
-                <sl-breadcrumb-item>Home</sl-breadcrumb-item>
-              </sl-breadcrumb>
-            </div>
-            <smart-table page-size="10" column-menu paging filtering sortable class="results-table">
-            </smart-table>
-          </sl-tab-panel>
-
-          <sl-tab-panel name="tasks">
-            <div class="content-container">
-              <sl-breadcrumb>
-                <sl-breadcrumb-item>Home</sl-breadcrumb-item>
-              </sl-breadcrumb>
-            </div>
-            <smart-table page-size="10" column-menu paging filtering sortable class="tasks-table">
-            </smart-table>
-          </sl-tab-panel>
-        </sl-tab-group>
-      </div>
     </div>
-</body>
-
-<!-- Graph context menu -->
-<sl-menu class="graph-context-menu" style="max-width: 200px; visibility: hidden;">
-  <sl-menu-item value="documents">Locate Documents</sl-menu-item>
-  <sl-divider></sl-divider>
-  <sl-menu-item value="update">Update Relation</sl-menu-item>
-  <sl-menu-item value="delete">Remove Relation</sl-menu-item>
-</sl-menu>
-
-<!-- View Document Summary Dialog -->
-<sl-dialog label="Document Details" class="document-dialog" style="--width: 70vw;">
-  <sl-icon-button class="new-window" slot="header-actions" name="box-arrow-up-right"></sl-icon-button>
-
-  <h4 class="document-dialog-url"></h4>
-  <sl-details class="document-summary-content" summary="Summary"></sl-details>
-  <sl-details class="document-entities-content" summary="Extracted Entities">
-    <!-- Embedded graph -->
-    <div class="entity-graph-container"></div>
-  </sl-details>
-</sl-dialog>
-
-<!-- Settings Dialog -->
-<sl-dialog label="Extension settings" class="settings-dialog" style="--width: 50vw;">
-  <sl-input class="settings-api-host" label="API Host"></sl-input>
-
-  <sl-button class="settings-submit" slot="footer" variant="primary">Submit</sl-button>
-  <sl-button class="settings-close" slot="footer" variant="default">Close</sl-button>
-</sl-dialog>
-
+  </body>
 </html>

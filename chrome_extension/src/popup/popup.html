@@ -1,18 +1,25 @@
 <html>
+  <head>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="shoelace_dist/themes/light.css"
+    />
+    <script
+      type="text/javascript"
+      type="module"
+      src="shoelace.js"
+      data-shoelace="shoelace_dist"
+    ></script>
 
-<head>
-  <link rel="stylesheet" type="text/css" href="shoelace_dist/themes/light.css" />
-  <script type="text/javascript" type="module" src="shoelace.js" data-shoelace="shoelace_dist"></script>
+    <script type="text/javascript" type="module" src="popup.js"></script>
+  </head>
 
-  <script type="text/javascript" type="module" src="popup.js"></script>
-</head>
+  <body>
+    <h1>KMS Page Manager</h1>
 
-<body>
-  <h1>KMS Page Manager</h1>
-  <sl-button class="open-extension-page">
-    Open Extension Page
-  </sl-button>
+    <sl-button class="open-extension-page"> Open Extension Page </sl-button>
 
-</body>
-
+    <sl-button class="process-current-page"> Process Current Page </sl-button>
+  </body>
 </html>
