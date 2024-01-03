@@ -48,6 +48,36 @@ const addDocumentAnnotation = async ({ hash, annotation }) => {
     console.log(responseBody);
 }
 
+const getDocumentAnnotation = async ({ hash }) => {
+    const apiHost = await getApiHost();
+    const getAnnotationResponse = await fetch(`${apiHost}/documents/${hash}/annotations`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const responseBody = await getAnnotationResponse.json();
+    console.log(responseBody);
+    return responseBody['annotations'];
+}
+
+const removeDocumentAnnotation = async ({ hash, annotation }) => {
+    const apiHost = await getApiHost();
+    const removeAnnotationResponse = await fetch(`${apiHost}/documents/${hash}/annotations`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            'annotation': annotation,
+        }),
+    });
+
+    const responseBody = await removeAnnotationResponse.json();
+    console.log(responseBody);
+}
+
 // one-time registration
 chrome.runtime.onInstalled.addListener(async () => {
     chrome.contextMenus.create({
