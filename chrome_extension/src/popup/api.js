@@ -1,40 +1,3 @@
-export const registerDocument = async ({ url, title }) => {
-  const apiHost = await getApiHost();
-  const registerResultResponse = await fetch(`${apiHost}/process`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      url: url,
-      title: title,
-    }),
-  });
-
-  const resultResponseBody = await registerResultResponse.json();
-  console.log(resultResponseBody);
-  return resultResponseBody["hash"];
-};
-
-export const addDocumentAnnotation = async ({ hash, annotation }) => {
-  const apiHost = await getApiHost();
-  const addAnnotationResponse = await fetch(
-    `${apiHost}/documents/${hash}/annotations`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        annotation: annotation,
-      }),
-    }
-  );
-
-  const responseBody = await addAnnotationResponse.json();
-  console.log(responseBody);
-};
-
 export const getDocumentAnnotation = async ({ hash }) => {
   const apiHost = await getApiHost();
   const getAnnotationResponse = await fetch(
@@ -69,6 +32,30 @@ export const removeDocumentAnnotation = async ({ hash, annotation }) => {
 
   const responseBody = await removeAnnotationResponse.json();
   console.log(responseBody);
+};
+
+export const registerDocument = async ({ url, title }) => {
+  const protocol = url.split("//")[0];
+  if (protocol.indexOf("chrome") > -1) {
+    return;
+  }
+
+  const apiHost = await getApiHost();
+  const registerResultResponse = await fetch(`${apiHost}/process`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      url: url,
+      title: title,
+    }),
+  });
+
+  const resultResponseBody = await registerResultResponse.json();
+  const hash = resultResponseBody["hash"];
+  console.log(`${hash}: ${url}`);
+  return hash;
 };
 
 const getApiHost = async () => {
