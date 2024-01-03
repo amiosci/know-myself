@@ -84,6 +84,7 @@ def add_document_annotation(hash: str, annotation: str) -> None:
                     ),
                 )
             except:
+                # possible encoding issue?
                 print(curs.query)
                 raise
 
@@ -95,7 +96,7 @@ def remove_document_annotation(hash: str, annotation: str) -> None:
             curs.execute(
                 "UPDATE kms.document_paths SET "
                 "metadata=jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
-                "- %s, true) where hash = %s",
+                "- %s::jsonb, true) where hash = %s",
                 (
                     [formatted_annotation],
                     hash,
