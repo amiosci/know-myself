@@ -20,21 +20,16 @@ from doc_store import doc_loader
 def interrogate_youtube_video(url: str, questions: list[str]):
     docs = doc_loader.get_url_documents(url)
 
-    # Combine docs
     combined_docs = [doc.page_content for doc in docs]
     text = " ".join(combined_docs)
 
-    # Split the combined docs into chunks of size 1500 with an overlap of 150
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=150)
     splits = text_splitter.split_text(text)
 
-    # Build an index
     embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
     vectordb = Chroma.from_texts(
         splits,
         embedding_function,
-        # persist_directory="vector_store_0003",
-        # collection_name="david_goggins_short",
     )
     prompt = PromptTemplate(
         template="""Given the context about a video. Answer the user in a friendly and precise manner.
@@ -57,7 +52,7 @@ def interrogate_youtube_video(url: str, questions: list[str]):
 
     responses = []
     for question in questions:
-        response = qa_chain({"query": "What is this video about?"})
+        response = qa_chain({"query": question})
         responses.append((question, response.get("result", None)))
 
     return responses
