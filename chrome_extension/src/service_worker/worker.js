@@ -44,12 +44,3 @@ chrome.contextMenus.onClicked.addListener(
     }
   }
 );
-
-// open Chrome extension local UI
-chrome.action.onClicked.addListener((tab) => {
-  console.log(tab);
-  chrome.tabs.create({
-    url: chrome.runtime.getURL("index.html"),
-    pinned: true,
-  });
-});
