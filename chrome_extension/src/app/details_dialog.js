@@ -328,7 +328,7 @@ const loadGraph = (graphData) => {
     });
 
     // Render relevant graphs
-    const componentMinimumSize = 3;
+    const componentMinimumSize = 5;
     const componentNodes = connectedComponents(graph).filter(x => x.length >= componentMinimumSize);
 
     const graphTabMap = {};
