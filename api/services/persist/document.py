@@ -1,6 +1,6 @@
 import dataclasses
 from psycopg2.extras import RealDictCursor
-from psycopg2.errors import UniqueViolation
+from psycopg2.errors import UniqueViolation # type: ignore
 
 from services.persist.utils import get_connection
 
