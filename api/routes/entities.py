@@ -1,14 +1,15 @@
 from flask import jsonify, Flask
 
-from analyzers import extraction
-from doc_store import disk_store
+from content_workflow import DocumentEntitiesContainer, Context
 
 
 def register_routes(app: Flask):
     @app.get("/entities/<hash>")
-    def get_entities(hash: str):
-        store = disk_store.default_store()
-        entity_relations = extraction.filter_common_erroneous_relations(
-            store.load_entity_relations(hash)
-        )
-        return jsonify([x.model_dump() for x in entity_relations])
+    async def get_entities(hash: str):
+        content_retriever = DocumentEntitiesContainer()
+        context = Context(hash=hash)
+        if content_retriever.has_processed(context):
+            entity_relations = await content_retriever.get_output_type(context)
+            return jsonify([x.model_dump() for x in entity_relations])
+
+        return []

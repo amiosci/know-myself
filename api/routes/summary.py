@@ -1,7 +1,7 @@
 import dataclasses
 from flask import jsonify, Flask
 
-from services import persist
+from content_workflow import DocumentSummaryContainer, Context
 
 
 @dataclasses.dataclass
@@ -22,7 +22,12 @@ class ContentSummaryResponse:
 
 def register_routes(app: Flask):
     @app.get("/summary/<hash>")
-    def has_summary(hash: str):
-        summary = persist.get_summary(hash)
+    async def has_summary(hash: str):
+        content_retriever = DocumentSummaryContainer()
+        context = Context(hash=hash)
+        if content_retriever.has_processed(context):
+            summary = await content_retriever.get_output_type(context)
+        else:
+            summary = None
         response = ContentSummaryResponse.for_hash_response(hash, summary)
         return jsonify(response)

@@ -2,7 +2,6 @@ import asyncio
 
 from celery import shared_task
 from celery.utils.log import get_logger
-from doc_store import disk_store
 from services import persist
 
 from content_workflow import (
@@ -28,39 +27,36 @@ def _run_celery_analyzer_task(
 ):
     hash = task_context.hash
 
-    async def run_processor():
-        persist.update_processing_action_state(hash, task_id, task_name, "STARTED")
-        task_processor = task_processor_ctor()
-        task_result = await task_processor.process_context(task_context)
-        if task_result.result_type == TaskResultType.SKIPPED:
-            logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
+    with persist.assign_processing_action(hash, task_name, task_id) as updater:
 
-        terminal_status = "FAILED"
-        if task_result.result_type == TaskResultType.PROCESSED:
-            terminal_status = "COMPLETE"
-        persist.update_processing_action_state(
-            hash, task_id, task_name, terminal_status
-        )
+        async def run_processor():
+            task_processor = task_processor_ctor()
+            task_result = await task_processor.process_context(task_context)
+            if task_result.result_type == TaskResultType.SKIPPED:
+                logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
 
-    async def process_with_timeout():
-        async with asyncio.timeout(3600):  # 1h
-            return await run_processor()
+            terminal_status = "FAILED"
+            if task_result.result_type == TaskResultType.PROCESSED:
+                terminal_status = "COMPLETE"
 
-    try:
-        asyncio.run(process_with_timeout())
-    except (TimeoutError, asyncio.CancelledError) as e:
-        status = "CANCELLED"
-        if isinstance(e, TimeoutError):
-            status = "TIMEOUT"
-        persist.update_processing_action_state(hash, task_id, task_name, status)
-    except:
-        persist.update_processing_action_state(hash, task_id, task_name, "FAILED")
+            updater.set_status(terminal_status)
+
+        async def process_with_timeout():
+            async with asyncio.timeout(3600):  # 1h
+                return await run_processor()
+
+        try:
+            asyncio.run(process_with_timeout())
+        except TimeoutError:
+            updater.set_status("TIMEOUT")
+        except asyncio.CancelledError:
+            updater.set_status("CANCELLED")
 
 
 @shared_task(bind=True, trail=True)
-def summarize_content(self, hash: str, url: str):
+def summarize_content(self, hash: str):
     _run_celery_analyzer_task(
-        Context(hash=hash, url=url),
+        Context(hash=hash),
         self.request.id,
         "Summarize",
         SummarizeContent,
@@ -68,9 +64,9 @@ def summarize_content(self, hash: str, url: str):
 
 
 @shared_task(bind=True, trail=True)
-def extract_entity_relations(self, hash: str, url: str):
+def extract_entity_relations(self, hash: str):
     _run_celery_analyzer_task(
-        Context(hash=hash, url=url),
+        Context(hash=hash),
         self.request.id,
         "Extract Relations",
         ExtractContentRelations,

@@ -1,39 +1,49 @@
 from celery import shared_task, group
+from celery.canvas import Signature
 from celery.utils.log import get_logger
 
+from typing import Callable, Any
 from analyzers import tasks as analyzer_tasks
-from doc_store import disk_store
-from doc_store import doc_loader
-
 from services import persist
 
 logger = get_logger(__name__)
 
 
-@shared_task(trail=True, bind=True)
-def process_content(self, hash: str, url: str):
-    logger.info(f"[Flask Shim] Processing started for {url}")
+def _register_task(
+    hash: str,
+    parent_task_id: str,
+    task_name: str,
+    task_func: Callable[[str], Signature],
+) -> Signature:
+    persist.create_processing_action(
+        hash,
+        parent_task_id,
+        task_name,
+    )
 
-    store = disk_store.default_store(logging_func=logger.info)
+    return task_func(hash)
 
-    if store.has_document_content(hash):
-        logger.info(f"[Flask Shim] Skipping - Document content already exists: {hash}")
-    else:
-        logger.info(f"[Flask Shim] Downloading contents: {hash}")
-        docs = doc_loader.get_url_documents(url)
 
-        logger.info(f"[Flask Shim] Caching contents: {hash}")
-        store.save_document_content(hash, docs)
-
+@shared_task(bind=True, trail=True)
+def process_content(self, hash: str):
+    print(self.request.id)
     # register all tasks to run in group
-    group(
-        [
-            analyzer_tasks.summarize_content.si(hash, url),  # type: ignore
-            analyzer_tasks.extract_entity_relations.si(hash, url),  # type: ignore
-        ]
-    ).apply_async()
+    tasks = []
+    tasks.append(
+        _register_task(
+            hash,
+            self.request.id,
+            "Summarize",
+            analyzer_tasks.summarize_content.si,  # type: ignore
+        )
+    )
+    tasks.append(
+        _register_task(
+            hash,
+            self.request.id,
+            "Extract Relations",
+            analyzer_tasks.extract_entity_relations.si,  # type: ignore
+        )
+    )
 
-    persist.update_processing_action(hash, url, self.request.id, "COMPLETE")
-
-    logger.info(f"[Flask Shim] Tasks requested for {url}")
-    logger.info(f"[Flask Shim] Processing completed for {url}")
+    group(tasks).apply_async()

@@ -28,6 +28,11 @@ class DocumentLoader(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        raise NotImplementedError()
+
+    @staticmethod
+    @abc.abstractmethod
     def can_load(url: ParseResult) -> bool:
         raise NotImplementedError()
 
@@ -42,6 +47,10 @@ class DocumentLoader(abc.ABC):
 
 class DefaultDocumentLoader(DocumentLoader):
     @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        return None
+
+    @staticmethod
     def can_load(url: ParseResult) -> bool:
         return True
 
@@ -51,11 +60,26 @@ class DefaultDocumentLoader(DocumentLoader):
 
 class HackerNewsDocumentLoader(DocumentLoader):
     @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        if HackerNewsDocumentLoader.can_load(url):
+            id_match = re.match(r"^id=([0-9]+)$", url.query)
+            if id_match:
+                id = id_match.group()
+            else:
+                raise RuntimeError("Cannot be loadable without id param")
+            return {
+                "loader": "hacker_news",
+                "id": id,
+            }
+
+        return None
+
+    @staticmethod
     def can_load(url: ParseResult) -> bool:
         # https://news.ycombinator.com/item?id=34817881
         valid_site = url.netloc in ["news.ycombinator.com"]
         has_valid_path = url.path == "/item"
-        has_id = re.match(r'^id=[0-9]+$', url.query) is not None
+        has_id = re.match(r"^id=[0-9]+$", url.query) is not None
 
         return valid_site and has_valid_path and has_id
 
@@ -65,6 +89,17 @@ class HackerNewsDocumentLoader(DocumentLoader):
 
 
 class WikipediaDocumentLoader(DocumentLoader):
+    @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        if WikipediaDocumentLoader.can_load(url):
+            query = url.path.split("/")[-1]
+            return {
+                "loader": "wikipedia",
+                "id": query,
+            }
+
+        return None
+
     @staticmethod
     def can_load(url: ParseResult) -> bool:
         valid_site = url.netloc in ["wikipedia.org", "en.wikipedia.org"]
@@ -78,7 +113,7 @@ class WikipediaDocumentLoader(DocumentLoader):
         if not query:
             raise ValueError("Invalid Wikipedia URL requested")
 
-        loader = WikipediaLoader(query="Walt_Disney")
+        loader = WikipediaLoader(query=query)
         return loader.load()
 
     def _load_query(self) -> str:
@@ -86,7 +121,26 @@ class WikipediaDocumentLoader(DocumentLoader):
         return self.url.path.split("/")[-1]
 
 
+def _load_arxiv_query(url: ParseResult) -> str:
+    if url.path.startswith("/pdf/"):
+        # https://arxiv.org/pdf/2305.05003.pdf
+        return url.path[1:].strip("pdf")[1:-1]
+
+    # https://arxiv.org/abs/2305.05003
+    return url.path.split("/")[-1]
+
+
 class ArxivDocumentLoader(DocumentLoader):
+    @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        if WikipediaDocumentLoader.can_load(url):
+            return {
+                "loader": "arxiv",
+                "id": _load_arxiv_query(url),
+            }
+
+        return None
+
     @staticmethod
     def can_load(url: ParseResult) -> bool:
         valid_site = url.netloc == "arxiv.org"
@@ -96,23 +150,25 @@ class ArxivDocumentLoader(DocumentLoader):
         return valid_site and has_valid_path_prefix
 
     def load(self) -> list[Document]:
-        query = self._load_query()
+        query = _load_arxiv_query(self.url)
         if not query:
             raise ValueError("Invalid Arxiv URL requested")
 
         loader = ArxivLoader(query=query)
         return loader.load()
 
-    def _load_query(self) -> str:
-        if self.url.path.startswith("/pdf/"):
-            # https://arxiv.org/pdf/2305.05003.pdf
-            return self.url.path[1:].strip("pdf")[1:-1]
-
-        # https://arxiv.org/abs/2305.05003
-        return self.url.path.split("/")[-1]
-
 
 class PDFDocumentLoader(DocumentLoader):
+    @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        if PDFDocumentLoader.can_load(url):
+            return {
+                "loader": "pdf",
+                "url": url.geturl(),
+            }
+
+        return None
+
     @staticmethod
     def can_load(url: ParseResult) -> bool:
         extension = _get_url_extension(url)
@@ -125,6 +181,16 @@ class PDFDocumentLoader(DocumentLoader):
 
 
 class WebPageDocumentLoader(DocumentLoader):
+    @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        if WebPageDocumentLoader.can_load(url):
+            return {
+                "loader": "webpage",
+                "url": url.geturl(),
+            }
+
+        return None
+
     @staticmethod
     def can_load(url: ParseResult) -> bool:
         valid_schemes = ["http", "https"]
@@ -144,6 +210,16 @@ class WebPageDocumentLoader(DocumentLoader):
 
 
 class YouTubeVideoDocumentLoader(DocumentLoader):
+    @staticmethod
+    def get_loader_spec(url: ParseResult) -> dict[str, str] | None:
+        if YouTubeVideoDocumentLoader.can_load(url):
+            return {
+                "loader": "youtube",
+                "url": url.geturl(),
+            }
+
+        return None
+
     @staticmethod
     def can_load(url: ParseResult) -> bool:
         is_youtube = url.netloc in ["www.youtube.com", "youtube.com"]
@@ -173,9 +249,24 @@ _ORDERED_LOADERS = [
 ]
 
 
+def get_loader_spec(url: str) -> dict[str, str] | None:
+    parsed_url = urlparse(url)
+    return next(
+        (
+            x.get_loader_spec(parsed_url)
+            for x in _ORDERED_LOADERS
+            if x.get_loader_spec(parsed_url) is not None
+        ),
+        None,
+    )
+
+
 def locate(url: str) -> DocumentLoader | None:
     parsed_url = urlparse(url)
-    loader = next((x for x in _ORDERED_LOADERS if x.can_load(parsed_url)), None)
+    loader = next(
+        (x for x in _ORDERED_LOADERS if x.can_load(parsed_url)),
+        None,
+    )
     if loader is not None:
         return loader(parsed_url)
 
