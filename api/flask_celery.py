@@ -1,13 +1,12 @@
+from functools import partial
+from typing import Callable
+
 from celery import shared_task, group
 from celery.canvas import Signature
-from celery.utils.log import get_logger
-from typing import Callable
 
 from analyzers import tasks as analyzer_tasks
 from services.persist import task
 import constants
-
-logger = get_logger(__name__)
 
 
 def _register_task(
@@ -27,21 +26,16 @@ def _register_task(
 
 @shared_task(bind=True, trail=True)
 def process_content(self, hash: str):
-    print(self.request.id)
-    # register all tasks to run in group
     tasks = []
+    register_task = partial(_register_task, hash, self.request.id)
     tasks.append(
-        _register_task(
-            hash,
-            self.request.id,
+        register_task(
             constants.SUMMARY_TASK,
             analyzer_tasks.summarize_content.si,  # type: ignore
         )
     )
     tasks.append(
-        _register_task(
-            hash,
-            self.request.id,
+        register_task(
             constants.ENTITIES_TASK,
             analyzer_tasks.extract_entity_relations.si,  # type: ignore
         )
