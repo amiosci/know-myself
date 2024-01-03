@@ -4,8 +4,9 @@
     "version": "1.0",
     "manifest_version": 3,
     "action": {
-        "default_title": "Click to view MyndGraph"
-    },
+        "default_title": "Click to view MyndGraph",
+        "default_popup": "popup.html"
+        },
     "permissions": [
         "readingList",
         "tabs",

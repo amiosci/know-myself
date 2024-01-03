@@ -1,6 +1,12 @@
-console.log('This is a popup!');
+const init = async () => {
+    const extensionUrl = `chrome-extension://${chrome.runtime.id}`;
+    const extensionHome = `${extensionUrl}/index.html`;
 
+    const openSettingsButton = document.querySelector('.open-extension-page');
+    openSettingsButton.addEventListener('click', async () => {
+        window.open(extensionHome);
+    });
 
-chrome.readingList.onEntryAdded.addListener((entry) => {
-    console.log(entry);
-});
+}
+
+document.readyState === 'complete' ? init() : window.onload = init;

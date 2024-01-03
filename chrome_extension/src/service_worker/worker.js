@@ -91,10 +91,6 @@ chrome.runtime.onInstalled.addListener(async () => {
         { frameUrl, selectionText, linkUrl, menuItemId },
         { title }
     ) => {
-        // save selection as annotation
-        console.log(selectionText);
-        console.log(linkUrl ?? "No link selected");
-
         const hasSelectedText = selectionText !== undefined;
         const hasSelectedLink = linkUrl !== undefined;
 
@@ -122,6 +118,7 @@ chrome.readingList.onEntryAdded.addListener(async (entry) => {
 });
 
 // open Chrome extension local UI
-chrome.action.onClicked.addListener(() => {
+chrome.action.onClicked.addListener((tab) => {
+    console.log(tab);
     chrome.tabs.create({ url: chrome.runtime.getURL('index.html'), pinned: true });
 });

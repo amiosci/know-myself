@@ -4,7 +4,7 @@ from langchain.chat_models import ChatOllama
 from langchain_experimental.llms.ollama_functions import OllamaFunctions
 
 
-_DEFAULT_OLLAMA_MODEL = "mistral"
+_DEFAULT_OLLAMA_MODEL = "llama2"
 
 
 def functions_llm(verbose: bool = False, **kwargs):

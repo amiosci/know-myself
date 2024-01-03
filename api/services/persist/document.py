@@ -75,8 +75,8 @@ def add_document_annotation(hash: str, annotation: str) -> None:
             formatted_annotation = json.JSONEncoder().encode(annotation).strip('"')
             try:
                 curs.execute(
-                    "UPDATE kms.document_paths SET "
-                    "metadata=jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
+                    "UPDATE kms.document_paths SET metadata = "
+                    "jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
                     "|| %s::jsonb, true) where hash = %s",
                     (
                         [formatted_annotation],
@@ -94,8 +94,8 @@ def remove_document_annotation(hash: str, annotation: str) -> None:
         with conn.cursor() as curs:
             formatted_annotation = json.JSONEncoder().encode(annotation).strip('"')
             curs.execute(
-                "UPDATE kms.document_paths SET "
-                "metadata=jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
+                "UPDATE kms.document_paths SET metadata = "
+                "jsonb_set(metadata::jsonb, '{annotations}', (metadata->'annotations')::jsonb "
                 "- %s::jsonb, true) where hash = %s",
                 (
                     [formatted_annotation],
