@@ -5,7 +5,7 @@ import celery.signals
 import datetime
 import time
 
-from services import persist
+from services.persist import metrics
 
 from analyzers import tasks as analyzer_tasks
 import flask_celery
@@ -29,10 +29,10 @@ def celery_task_postrun(task_id, state, task, **kwargs):
 
     logger.info(f"[Saving Metrics]: {task_id}")
     # save metrics
-    persist.report_task_metrics(
+    metrics.report_task_metrics(
         task_id,
         parent_id,
-        persist.TaskMetric(
+        metrics.TaskMetric(
             result=state,
             duration_seconds=runtime,
             started_at=datetime.datetime.fromtimestamp(task.start_time),

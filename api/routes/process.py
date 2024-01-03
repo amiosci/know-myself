@@ -2,7 +2,7 @@ import dataclasses
 from flask import request, Flask
 import flask_celery
 
-from services import persist
+from services.persist import task, document, summary
 from routes import url_tools
 
 from loaders.loaders import get_loader_spec
@@ -27,7 +27,7 @@ def register_routes(app: Flask):
         filters = list(
             map(lambda x: x.upper().strip(), request.args.getlist("filter", type=str))
         )
-        registrations = persist.get_processing_registrations()
+        registrations = task.get_processing_registrations()
         if filters:
             for filtered_status in filters:
                 registrations = list(
@@ -52,7 +52,7 @@ def register_routes(app: Flask):
                 "hash": registration.hash,
                 "has_summary": registration.has_summary,
             }
-            for registration in persist.get_loaded_documents()
+            for registration in document.get_loaded_documents()
         ]
 
     @app.post("/process")
@@ -64,13 +64,18 @@ def register_routes(app: Flask):
         loader_spec = get_loader_spec(target_url)
         if loader_spec is None:
             raise ValueError("Could not process URL")
-        
-        has_processed_spec = persist.has_loader_spec_registered(loader_spec)
+
+        has_processed_spec = document.has_loader_spec_registered(loader_spec)
         if has_processed_spec and not request_body.force_process:
             print("URL already processed")
             return {"result_id": None, "hash": target_url_hash}
-        
-        persist.register_document(target_url_hash, target_url, loader_spec, handle_exists=request_body.force_process)
+
+        document.register_document(
+            target_url_hash,
+            target_url,
+            loader_spec,
+            handle_exists=request_body.force_process,
+        )
 
         # use target URL to dedupe against requests with fragment/query changes
         process_request = flask_celery.process_content.delay(
@@ -88,14 +93,14 @@ def register_routes(app: Flask):
         process_result = None
         task_id = None
 
-        registration = persist.get_processing_registration(hash)
+        registration = task.get_processing_registration(hash)
         if registration is not None:
             task_id = registration.task_id
-            process_result = persist.get_task_result(task_id)
+            process_result = task.get_task_result(task_id)
             if process_result == "SUCCESS":
                 request_body = GetProcessingResultsContentRequest(**request.json)  # type: ignore
                 if request_body.summary:
-                    value["summary"] = persist.get_summary(hash)
+                    value["summary"] = summary.get_summary(hash)
         return {
             "resultId": task_id,
             "status": process_result,

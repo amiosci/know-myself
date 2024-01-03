@@ -4,7 +4,7 @@ from celery.utils.log import get_logger
 
 from typing import Callable, Any
 from analyzers import tasks as analyzer_tasks
-from services import persist
+from services.persist import task
 
 logger = get_logger(__name__)
 
@@ -15,7 +15,7 @@ def _register_task(
     task_name: str,
     task_func: Callable[[str], Signature],
 ) -> Signature:
-    persist.create_processing_action(
+    task.create_processing_action(
         hash,
         parent_task_id,
         task_name,

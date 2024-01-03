@@ -2,7 +2,7 @@ import asyncio
 
 from celery import shared_task
 from celery.utils.log import get_logger
-from services import persist
+from services.persist import task
 
 from content_workflow import (
     SummarizeContent,
@@ -27,7 +27,7 @@ def _run_celery_analyzer_task(
 ):
     hash = task_context.hash
 
-    with persist.assign_processing_action(hash, task_name, task_id) as updater:
+    with task.assign_processing_action(hash, task_name, task_id) as updater:
 
         async def run_processor():
             task_processor = task_processor_ctor()

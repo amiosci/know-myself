@@ -7,7 +7,7 @@ from doc_store import disk_store
 from doc_store import doc_loader
 from analyzers import extraction
 from analyzers import summarize
-from services import persist
+from services.persist import summary, document
 
 ContentType = str
 
@@ -59,7 +59,7 @@ class DocumentContentContainer(ContentTypeContainer[list[Document]]):
         return self._store.has_document_content(context.hash)
 
     async def _process_context(self, context: Context) -> list[Document]:
-        url = persist.get_hash_url(context.hash)
+        url = document.get_hash_url(context.hash)
         return doc_loader.get_url_documents(url)
 
     def _store_content(self, context: Context, results: list[Document]) -> None:
@@ -105,7 +105,7 @@ class DocumentSummaryContainer(ContentTypeContainer[str]):
         self._store = disk_store.default_store()
 
     def has_processed(self, context: Context) -> bool:
-        return persist.has_summary(context.hash)
+        return summary.has_summary(context.hash)
 
     async def _process_context(self, context: Context) -> str | None:
         content_provider = DocumentContentContainer()
@@ -113,12 +113,12 @@ class DocumentSummaryContainer(ContentTypeContainer[str]):
         return await summarize.summarize_document(content)
 
     def _store_content(self, context: Context, results: str) -> None:
-        persist.save_summary(context.hash, results)
+        summary.save_summary(context.hash, results)
 
     async def _load_content(self, context: Context) -> str:
-        summary = persist.get_summary(context.hash)
-        if summary is not None:
-            return summary
+        document_summary = summary.get_summary(context.hash)
+        if document_summary is not None:
+            return document_summary
 
         raise RuntimeError("Summary must exist before loading")
 
@@ -142,13 +142,13 @@ class ProcessorBase(abc.ABC):
 
 class SummarizeContent(ProcessorBase):
     async def process_context(self, context: Context) -> TaskResult:
-        if persist.has_summary(context.hash):
+        if summary.has_summary(context.hash):
             return TaskResult(result_type=TaskResultType.SKIPPED)
 
         content_provider = DocumentContentContainer()
         content = await content_provider.get_output_type(context)
-        summary = await summarize.summarize_document(content)
-        persist.save_summary(context.hash, summary)
+        document_summary = await summarize.summarize_document(content)
+        summary.save_summary(context.hash, document_summary)
         return TaskResult(result_type=TaskResultType.PROCESSED)
 
 
