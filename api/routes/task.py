@@ -11,19 +11,21 @@ class TaskActionBody:
     action: str
 
 
-def register_routes(app: Flask):
-    def _get_task_type_statuses(task_type: str) -> list[str]:
-        if task_type == "all":
+def _get_task_type_statuses(task_type: str) -> list[str]:
+    match task_type:
+        case "all":
             return []
-        elif task_type == "pending":
+        case "pending":
             return ["PENDING", "STARTED"]
-        elif task_type == "complete":
+        case "complete":
             return ["COMPLETED"]
-        elif task_type == "failed":
+        case "failed":
             return ["TIMEOUT", "FAILED"]
 
-        raise ValueError(f"Unsupported task_type {task_type}")
+    raise ValueError(f"Unsupported task_type {task_type}")
 
+
+def register_routes(app: Flask):
     @app.get("/tasks")
     def list_registration_states():
         task_types = request.args.getlist(
@@ -34,7 +36,12 @@ def register_routes(app: Flask):
         if not task_types:
             task_types = ["complete"]
 
-        supported_task_types = ["pending", "complete", "failed", "all"]
+        supported_task_types = [
+            "pending",
+            "complete",
+            "failed",
+            "all",
+        ]
         if any(map(lambda x: x not in supported_task_types, task_types)):
             raise ValueError("Invalid type argument")
 
@@ -43,7 +50,7 @@ def register_routes(app: Flask):
         )
 
         registrations = task.get_processing_registrations()
-        if len(status_filters) > 0:
+        if status_filters:
             registrations = filter(lambda x: x.status in status_filters, registrations)
 
         show_retried_tasks = request.args.get("include_retried", False, type=bool)
@@ -65,20 +72,21 @@ def register_routes(app: Flask):
     @app.post("/tasks/<task_id>/action")
     def reprocess_task(task_id: str):
         request_body = TaskActionBody(**request.json)  # type: ignore
-        # re-request task type
-        if request_body.action == "reprocess":
-            task_request = task.get_task_request(task_id)
-            if task_request is None:
-                raise ValueError("No such task exists")
-            reprocess_task = flask_celery.process_content.delay(
-                task_request.hash, task_request.task_name
-            )  # type: ignore
+        match request_body.action:
+            case "reprocess":
+                # re-request task type
+                task_request = task.get_task_request(task_id)
+                if task_request is None:
+                    raise ValueError("No such task exists")
+                reprocess_task = flask_celery.process_content.delay(
+                    task_request.hash, task_request.task_name
+                )  # type: ignore
 
-            task.set_retry_child(task_id, reprocess_task.id)
+                task.set_retry_child(task_id, reprocess_task.id)
 
-            return {
-                "result_id": reprocess_task.id,
-                "hash": task_request.hash,
-            }
+                return {
+                    "result_id": reprocess_task.id,
+                    "hash": task_request.hash,
+                }
 
         raise NotImplementedError()

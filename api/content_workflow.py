@@ -19,6 +19,13 @@ class Context:
     # the primary hash being worked against
     hash: str
 
+    # Force the processor to re-run, independent of prior results.
+    # Generally speaking, this will overwrite the previous results.
+    force_process: bool = False
+
+    def __str__(self) -> str:
+        return f"Force: [{self.force_process}] Hash: [{self.hash}]"
+
 
 class ContentTypeContainer(abc.ABC, Generic[T]):
     contentType: str
@@ -134,41 +141,64 @@ class TaskResult:
     result_type: TaskResultType
     message: str | None = None
 
+    def __str__(self) -> str:
+        x = f"{self.result_type}"
+        if self.message is not None:
+            x += f": {self.message}"
+        return x
+
+
+class DocumentProcessorError(Exception):
+    """Used to propagate a handled failure during document processing."""
+
 
 class ProcessorBase(abc.ABC):
-    @abc.abstractmethod
     async def process_context(self, context: Context) -> TaskResult:
+        if not context.force_process:
+            if await self._skip_processor(context):
+                return TaskResult(result_type=TaskResultType.SKIPPED)
+        try:
+            await self._run_processor(context)
+            return TaskResult(result_type=TaskResultType.PROCESSED)
+        except DocumentProcessorError as e:
+            return TaskResult(
+                result_type=TaskResultType.FAILED,
+                message=str(e.args[0]),
+            )
+
+    @abc.abstractmethod
+    async def _run_processor(self, context: Context) -> None:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def _skip_processor(self, context: Context) -> bool:
         raise NotImplementedError()
 
 
 class SummarizeContent(ProcessorBase):
-    async def process_context(self, context: Context) -> TaskResult:
-        if summary.has_summary(context.hash):
-            return TaskResult(result_type=TaskResultType.SKIPPED)
+    async def _skip_processor(self, context: Context) -> bool:
+        return summary.has_summary(context.hash)
 
+    async def _run_processor(self, context: Context) -> None:
         content_provider = DocumentContentContainer()
         content = await content_provider.get_output_type(context)
         document_summary = await summarize.summarize_document(content)
         if len(document_summary) == 0:
-            return TaskResult(
-                result_type=TaskResultType.FAILED,
-                message="No summary created for document",
-            )
+            raise DocumentProcessorError("No summary created for document")
         summary.save_summary(context.hash, document_summary)
-        return TaskResult(result_type=TaskResultType.PROCESSED)
 
 
 # To be replaced by consumption of `extracted-relations`
 class ExtractContentRelations(ProcessorBase):
-    async def process_context(self, context: Context) -> TaskResult:
-        content_provider = DocumentEntitiesContainer()
-        if content_provider.has_processed(context):
-            return TaskResult(result_type=TaskResultType.SKIPPED)
+    _content_provider: DocumentEntitiesContainer
 
-        extracted_entities = await content_provider.get_output_type(context)
+    def __init__(self):
+        self._content_provider = DocumentEntitiesContainer()
+
+    async def _skip_processor(self, context: Context) -> bool:
+        return self._content_provider.has_processed(context)
+
+    async def _run_processor(self, context: Context) -> None:
+        extracted_entities = await self._content_provider.get_output_type(context)
         if len(extracted_entities) == 0:
-            return TaskResult(
-                result_type=TaskResultType.FAILED,
-                message="No entities extracted for document",
-            )
-        return TaskResult(result_type=TaskResultType.PROCESSED)
+            raise DocumentProcessorError("No entities extracted for document")

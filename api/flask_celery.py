@@ -11,13 +11,15 @@ import constants
 
 def _register_task(
     hash: str,
+    force_process: bool,
     parent_task_id: str,
     task_name: str,
-    task_func: Callable[[str], Signature],
+    task_func: Callable[[str, bool], Signature],
     requested_task_name: str | None = None,
 ) -> Signature | None:
     if requested_task_name is not None:
-        if requested_task_name is not task_name:
+        if requested_task_name != task_name:
+            print(f"Skipping [{task_name}] for requested [{requested_task_name}]")
             return None
 
     task.create_processing_action(
@@ -26,14 +28,19 @@ def _register_task(
         task_name,
     )
 
-    return task_func(hash)
+    return task_func(hash, force_process)
 
 
 @shared_task(bind=True, trail=True)
-def process_content(self, hash: str, task_name: str | None = None):
+def process_content(self, hash: str, requested_task_name: str | None = None):
     tasks = []
+    force_process = requested_task_name is not None
     register_task = partial(
-        _register_task, hash, self.request.id, requested_task_name=task_name
+        _register_task,
+        hash,
+        force_process,
+        self.request.id,
+        requested_task_name=requested_task_name,
     )
 
     summarize_task = register_task(

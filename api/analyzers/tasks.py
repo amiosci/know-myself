@@ -26,6 +26,7 @@ def _run_celery_analyzer_task(
     task_name: str,
     task_processor_ctor: type[ProcessorBase],
 ):
+    logger.info(task_context)
     hash = task_context.hash
 
     with task.assign_processing_action(hash, task_name, task_id) as updater:
@@ -36,6 +37,7 @@ def _run_celery_analyzer_task(
             if task_result.result_type == TaskResultType.SKIPPED:
                 logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
 
+            logger.info(task_result)
             terminal_status = "FAILED"
             if task_result.result_type == TaskResultType.PROCESSED:
                 terminal_status = "COMPLETE"
@@ -55,9 +57,9 @@ def _run_celery_analyzer_task(
 
 
 @shared_task(bind=True, trail=True)
-def summarize_content(self, hash: str):
+def summarize_content(self, hash: str, force_process: bool):
     _run_celery_analyzer_task(
-        Context(hash=hash),
+        Context(hash=hash, force_process=force_process),
         self.request.id,
         constants.SUMMARY_TASK,
         SummarizeContent,
@@ -65,9 +67,9 @@ def summarize_content(self, hash: str):
 
 
 @shared_task(bind=True, trail=True)
-def extract_entity_relations(self, hash: str):
+def extract_entity_relations(self, hash: str, force_process: bool):
     _run_celery_analyzer_task(
-        Context(hash=hash),
+        Context(hash=hash, force_process=force_process),
         self.request.id,
         constants.ENTITIES_TASK,
         ExtractContentRelations,
