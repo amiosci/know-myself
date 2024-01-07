@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import enum
 from psycopg2.extras import RealDictCursor
 from types import TracebackType
@@ -75,6 +76,7 @@ class ProcessingRegistration:
     task_name: str
     status: str
     status_reason: str
+    updated_at: datetime.datetime = datetime.datetime.min
     has_summary: bool = False
 
     def __post_init__(self):
@@ -100,7 +102,7 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as curs:
             curs.execute(
-                "SELECT t.hash, t.status_reason, t.retry_task_id, t.task_id, "
+                "SELECT t.hash, t.status_reason, t.updated_at, t.retry_task_id, t.task_id, "
                 "t.status, t.parent_id, t.task_name, "
                 "EXISTS(select 1 from genai.summaries where hash=t.hash) as has_summary, "
                 "(select url from kms.document_paths where hash=t.hash) as url "

@@ -58,17 +58,7 @@ def register_routes(app: Flask):
             lambda x: x.retry_task_id is None or show_retried_tasks, registrations
         )
 
-        return [
-            {
-                "url": registration.url,
-                "hash": registration.hash,
-                "task_id": registration.task_id,
-                "task_name": registration.task_name,
-                "status": registration.status,
-                "status_reason": registration.status_reason,
-            }
-            for registration in registrations
-        ]
+        return [dataclasses.asdict(registration) for registration in registrations]
 
     @app.post("/tasks/<task_id>/action")
     def reprocess_task(task_id: str):

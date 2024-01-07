@@ -15,7 +15,12 @@ export const createResultsTable = async () => {
           dataSource: new Smart.DataAdapter({
             dataSource: resultsTableDataSource,
             dataSourceType: "json",
-            dataFields: ["url: string", "hash: string", "has_summary: bool"],
+            dataFields: [
+              "url: string",
+              "hash: string",
+              "has_summary: bool",
+              "last_updated: date",
+            ],
           }),
           editing: false,
           columns: [
@@ -35,6 +40,12 @@ export const createResultsTable = async () => {
               label: "Summary Processed",
               dataField: "has_summary",
               dataType: "string",
+              allowEdit: false,
+            },
+            {
+              label: "Last Updated",
+              dataField: "last_updated",
+              dataType: "date",
               allowEdit: false,
             },
           ],
@@ -74,6 +85,7 @@ export const createTasksTable = async ({ onProcessRequest }) => {
               "task_id: string",
               "status: string",
               "status_reason: string",
+              "updated_at: date",
             ],
           }),
           selection: true,
@@ -103,8 +115,14 @@ export const createTasksTable = async ({ onProcessRequest }) => {
               dataType: "string",
               allowEdit: false,
             },
+            {
+              label: "Last Activity",
+              dataField: "updated_at",
+              dataType: "date",
+              allowEdit: false,
+            },
           ],
-          // onLoad: configureSelectionDisabled,
+          onLoad: configureSelectionDisabled,
         };
       }
     }
@@ -125,6 +143,8 @@ export const createTasksTable = async ({ onProcessRequest }) => {
     const taskIds = selectedTasks.map(
       (x) => tasksTable.dataSource.dataItemById[x]["task_id"]
     );
+
+    debugger;
     await onProcessRequest(taskIds);
   });
 

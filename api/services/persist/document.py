@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import json
 from psycopg2.extras import RealDictCursor
 from psycopg2.errors import UniqueViolation  # type: ignore
@@ -109,6 +110,7 @@ class DocumentProcessingResult:
     hash: str
     url: str
     has_summary: bool
+    last_updated: datetime.datetime
 
     def __post_init__(self):
         self.hash = self.hash.strip()
@@ -120,7 +122,9 @@ def get_loaded_documents() -> list[DocumentProcessingResult]:
         with conn.cursor(cursor_factory=RealDictCursor) as curs:
             curs.execute(
                 "SELECT t.hash, t.url, "
-                "EXISTS(select 1 from genai.summaries where hash=t.hash) as has_summary "
+                "EXISTS(select 1 from genai.summaries where hash=t.hash) as has_summary, "
+                "(select updated_at from genai.process_tasks "
+                "where hash=t.hash order by updated_at desc limit 1) as last_updated "
                 "from kms.document_paths as t",
             )
             return [DocumentProcessingResult(**row) for row in curs]

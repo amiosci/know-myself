@@ -29,6 +29,7 @@ def register_routes(app: Flask):
                 "url": registration.url,
                 "hash": registration.hash,
                 "has_summary": registration.has_summary,
+                "last_updated": registration.last_updated,
             }
             for registration in document.get_loaded_documents()
         ]
