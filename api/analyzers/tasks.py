@@ -56,7 +56,7 @@ def _run_celery_analyzer_task(
             updater.set_status("CANCELLED")
 
 
-@shared_task(bind=True, trail=True)
+@shared_task(bind=True, trail=True, task_track_started=True)
 def summarize_content(self, hash: str, force_process: bool):
     _run_celery_analyzer_task(
         Context(hash=hash, force_process=force_process),
@@ -66,7 +66,7 @@ def summarize_content(self, hash: str, force_process: bool):
     )
 
 
-@shared_task(bind=True, trail=True)
+@shared_task(bind=True, trail=True, task_track_started=True)
 def extract_entity_relations(self, hash: str, force_process: bool):
     _run_celery_analyzer_task(
         Context(hash=hash, force_process=force_process),

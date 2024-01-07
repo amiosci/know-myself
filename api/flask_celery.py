@@ -33,7 +33,20 @@ def _register_task(
 
 @shared_task(bind=True, trail=True)
 def process_content(self, hash: str, requested_task_name: str | None = None):
-    tasks = []
+    # map must remain within a celery annotated function, else ampq failures will occur
+    task_name_map = {
+        constants.SUMMARY_TASK: analyzer_tasks.summarize_content.si,
+        constants.ENTITIES_TASK: analyzer_tasks.extract_entity_relations.si,
+    }
+    task_requests = []
+    if requested_task_name is None:
+        task_requests.extend(list(map(tuple, task_name_map.items())))
+    else:
+        requested_task = task_name_map.get(requested_task_name)
+        if requested_task is None:
+            print(f"No task with found with name: [{requested_task_name}]")
+            return
+        task_requests.append((requested_task_name, requested_task))
     force_process = requested_task_name is not None
     register_task = partial(
         _register_task,
@@ -43,21 +56,19 @@ def process_content(self, hash: str, requested_task_name: str | None = None):
         requested_task_name=requested_task_name,
     )
 
-    summarize_task = register_task(
-        constants.SUMMARY_TASK,
-        analyzer_tasks.summarize_content.si,  # type: ignore
-    )
-    if summarize_task is not None:
-        tasks.append(summarize_task)
-
-    extract_entities_task = register_task(
-        constants.ENTITIES_TASK,
-        analyzer_tasks.extract_entity_relations.si,  # type: ignore
-    )
-    if extract_entities_task is not None:
-        tasks.append(extract_entities_task)
-
-    if len(tasks) == 0:
+    if not task_requests:
         print("No tasks requested")
+        return
+
+    tasks = []
+    for name, task_func in task_requests:
+        requested_task = register_task(name, task_func)
+        if requested_task is None:
+            print(f"Task creation failed for {name}")
+            continue
+        tasks.append(requested_task)
+
+    if not tasks:
+        print("No tasks created")
         return
     group(tasks).apply_async()
