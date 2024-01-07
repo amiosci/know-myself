@@ -20,6 +20,18 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
+def _result_type_to_status(result_type: TaskResultType) -> str:
+    match result_type:
+        case TaskResultType.SKIPPED:
+            return "COMPLETED (SKIPPED)"
+        case TaskResultType.FAILED:
+            return "FAILED"
+        case TaskResultType.PROCESSED:
+            return "COMPLETE"
+
+    raise ValueError(f"Unexpected TaskResultType {result_type}")
+
+
 def _run_celery_analyzer_task(
     task_context: Context,
     task_id: str,
@@ -38,11 +50,8 @@ def _run_celery_analyzer_task(
                 logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
 
             logger.info(task_result)
-            terminal_status = "FAILED"
-            if task_result.result_type == TaskResultType.PROCESSED:
-                terminal_status = "COMPLETE"
-
-            updater.set_status(terminal_status)
+            terminal_status = _result_type_to_status(task_result.result_type)
+            updater.set_status(terminal_status, task_result.message)
 
         async def process_with_timeout():
             async with asyncio.timeout(3600):  # 1h

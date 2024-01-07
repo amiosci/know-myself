@@ -104,9 +104,7 @@ export const createTasksTable = async ({ onProcessRequest }) => {
               allowEdit: false,
             },
           ],
-          onLoad: () => {
-            configureSelectionDisabled();
-          },
+          // onLoad: configureSelectionDisabled,
         };
       }
     }
@@ -128,6 +126,17 @@ export const createTasksTable = async ({ onProcessRequest }) => {
       (x) => tasksTable.dataSource.dataItemById[x]["task_id"]
     );
     await onProcessRequest(taskIds);
+  });
+
+  const refreshButtonElement = document.querySelector(
+    ".refresh-processing-queue"
+  );
+
+  addSafeEventListener(refreshButtonElement, "click", async (e) => {
+    const updatedDataSource = await getProcessingQueue();
+    tasksTable.dataSource = updatedDataSource;
+    // reset checkboxes
+    tasksTable.selected = [];
   });
 
   return tasksTable;
