@@ -50,9 +50,11 @@ def _run_celery_analyzer_task(
                 logger.info(f"[{task_name}] Skipping - Already processed: {hash}")
 
             logger.info(task_result)
-            terminal_status = _result_type_to_status(task_result.result_type)
             updater.set_result(
-                task.TaskResult(status=terminal_status, message=task_result.message)
+                task.TaskResult(
+                    status=_result_type_to_status(task_result.result_type),
+                    message=task_result.message,
+                )
             )
 
         async def process_with_timeout():
