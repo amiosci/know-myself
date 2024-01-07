@@ -52,11 +52,10 @@ export const createTasksTable = async ({ onProcessRequest }) => {
   const tasksTable = document.querySelector(".tasks-table");
   const retriableStates = ["FAILED", "TIMEOUT"];
   const configureSelectionEnabled = () => {
-    tasksTable.enableSelect(
-      tasksTable.dataSource.dataItemById
-        .filter((x) => retriableStates.includes(x["status"]))
-        .map((x) => x.boundIndex)
-    );
+    tasksTable.dataSource.dataItemById
+      .filter((x) => !retriableStates.includes(x["status"]))
+      .map((x) => x.$.index)
+      .map((x) => tasksTable.disableSelect(x));
   };
 
   const pendingTaskDataSource = await getProcessingQueue();
@@ -114,6 +113,11 @@ export const createTasksTable = async ({ onProcessRequest }) => {
     }
   );
 
+  addSafeEventListener(tasksTable, "change", (e) => {
+    const selectedTasks = tasksTable.getSelection();
+    const disableReprocessButton = selectedTasks.length === 0;
+    reprocessButtonElement.disabled = disableReprocessButton;
+  });
   const reprocessButtonElement = document.querySelector(
     ".reprocess-failed-tasks"
   );
