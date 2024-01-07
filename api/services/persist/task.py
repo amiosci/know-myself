@@ -1,4 +1,5 @@
 import dataclasses
+import enum
 from psycopg2.extras import RealDictCursor
 from types import TracebackType
 
@@ -122,6 +123,51 @@ def get_processing_registration(hash: str) -> ProcessingRegistration | None:
             return None
 
 
+class ProcessTaskStatus(enum.Enum):
+    SKIPPED = 0
+    FAILED = 1
+    COMPLETE = 2
+    TIMEOUT = 3
+    CANCELLED = 4
+
+    def __str__(self):
+        match self:
+            case ProcessTaskStatus.SKIPPED:
+                return "COMPLETED (SKIPPED)"
+            case ProcessTaskStatus.FAILED:
+                return "FAILED"
+            case ProcessTaskStatus.COMPLETE:
+                return "COMPLETE"
+            case ProcessTaskStatus.TIMEOUT:
+                return "TIMEOUT"
+            case ProcessTaskStatus.CANCELLED:
+                return "CANCELLED"
+
+        raise ValueError(f"Unknown Process Status {self}")
+
+
+_DEFAULT_MESSAGES = {
+    ProcessTaskStatus.SKIPPED: "Task processing not required. Skipped.",
+    ProcessTaskStatus.FAILED: "Task failed.",
+    ProcessTaskStatus.COMPLETE: "Task processing successful.",
+    ProcessTaskStatus.TIMEOUT: "Task did not complete in a timely manner.",
+    ProcessTaskStatus.CANCELLED: "Task cancellation requested.",
+}
+
+
+@dataclasses.dataclass
+class TaskResult:
+    status: ProcessTaskStatus
+    message: str | None = None
+
+    def friendly_message(self) -> str:
+        msg = self.message
+        if msg is None:
+            msg = _DEFAULT_MESSAGES[self.status]
+
+        return msg
+
+
 @dataclasses.dataclass
 class ProcessTaskUpdater:
     hash: str
@@ -131,15 +177,15 @@ class ProcessTaskUpdater:
     def __enter__(self):
         return self
 
-    def set_status(self, status: str, status_reason: str | None = None):
+    def set_result(self, task_result: TaskResult):
         column_updaters = ["status=%s"]
-        column_values = [status]
-        if status_reason is not None:
+        column_values = [str(task_result.status)]
+        if task_result.message is not None:
             column_updaters.append("status_reason=%s")
-            column_values.append(status_reason)
+            column_values.append(task_result.friendly_message())
         with get_connection() as conn:
             with conn.cursor() as curs:
-                print(f"setting status {status}")
+                print(f"setting status {task_result.status}")
                 curs.execute(
                     "UPDATE genai.process_tasks SET "
                     + ", ".join(column_updaters)
@@ -154,7 +200,12 @@ class ProcessTaskUpdater:
         traceback: TracebackType | None,
     ):
         if exc_val is not None:
-            self.set_status("FAILED", str(exc_val))
+            self.set_result(
+                TaskResult(
+                    status=ProcessTaskStatus.FAILED,
+                    message=str(exc_val),
+                )
+            )
 
         return True
 

@@ -20,14 +20,14 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-def _result_type_to_status(result_type: TaskResultType) -> str:
+def _result_type_to_status(result_type: TaskResultType) -> task.ProcessTaskStatus:
     match result_type:
         case TaskResultType.SKIPPED:
-            return "COMPLETED (SKIPPED)"
+            return task.ProcessTaskStatus.SKIPPED
         case TaskResultType.FAILED:
-            return "FAILED"
+            return task.ProcessTaskStatus.FAILED
         case TaskResultType.PROCESSED:
-            return "COMPLETE"
+            return task.ProcessTaskStatus.COMPLETE
 
     raise ValueError(f"Unexpected TaskResultType {result_type}")
 
@@ -51,7 +51,9 @@ def _run_celery_analyzer_task(
 
             logger.info(task_result)
             terminal_status = _result_type_to_status(task_result.result_type)
-            updater.set_status(terminal_status, task_result.message)
+            updater.set_result(
+                task.TaskResult(status=terminal_status, message=task_result.message)
+            )
 
         async def process_with_timeout():
             async with asyncio.timeout(3600):  # 1h
@@ -60,9 +62,19 @@ def _run_celery_analyzer_task(
         try:
             asyncio.run(process_with_timeout())
         except TimeoutError:
-            updater.set_status("TIMEOUT")
+            updater.set_result(
+                task.TaskResult(
+                    status=task.ProcessTaskStatus.TIMEOUT,
+                    message="Task timeout after 1h",
+                )
+            )
         except asyncio.CancelledError:
-            updater.set_status("CANCELLED")
+            updater.set_result(
+                task.TaskResult(
+                    status=task.ProcessTaskStatus.CANCELLED,
+                    message="Task cancellation requested",
+                )
+            )
 
 
 @shared_task(bind=True, trail=True, task_track_started=True)
