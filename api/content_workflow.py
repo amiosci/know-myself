@@ -1,6 +1,9 @@
 import abc
 import dataclasses
 import enum
+import io
+import traceback
+
 from langchain.docstore.document import Document
 from typing import TypeVar, Generic
 from doc_store import disk_store
@@ -164,6 +167,15 @@ class ProcessorBase(abc.ABC):
             return TaskResult(
                 result_type=TaskResultType.FAILED,
                 message=str(e.args[0]),
+            )
+        except Exception as e:
+            exception_writer = io.StringIO()
+            traceback.print_exc(file=exception_writer)
+            exception_message = exception_writer.read()
+            message = f"Unexpected exception: {exception_message}"
+            return TaskResult(
+                result_type=TaskResultType.FAILED,
+                message=message,
             )
 
     @abc.abstractmethod
