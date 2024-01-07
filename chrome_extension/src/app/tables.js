@@ -46,12 +46,11 @@ export const createResultsTable = async () => {
   return resultsTable;
 };
 
-export class TaskTableEventHandler {}
-
 export const createTasksTable = async ({ onProcessRequest }) => {
   const tasksTable = document.querySelector(".tasks-table");
-  const retriableStates = ["FAILED", "TIMEOUT"];
-  const configureSelectionEnabled = () => {
+
+  const configureSelectionDisabled = () => {
+    const retriableStates = ["FAILED", "TIMEOUT"];
     tasksTable.dataSource.dataItemById
       .filter((x) => !retriableStates.includes(x["status"]))
       .map((x) => x.$.index)
@@ -106,18 +105,13 @@ export const createTasksTable = async ({ onProcessRequest }) => {
             },
           ],
           onLoad: () => {
-            configureSelectionEnabled();
+            configureSelectionDisabled();
           },
         };
       }
     }
   );
 
-  addSafeEventListener(tasksTable, "change", (e) => {
-    const selectedTasks = tasksTable.getSelection();
-    const disableReprocessButton = selectedTasks.length === 0;
-    reprocessButtonElement.disabled = disableReprocessButton;
-  });
   const reprocessButtonElement = document.querySelector(
     ".reprocess-failed-tasks"
   );
