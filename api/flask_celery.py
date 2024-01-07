@@ -14,7 +14,12 @@ def _register_task(
     parent_task_id: str,
     task_name: str,
     task_func: Callable[[str], Signature],
-) -> Signature:
+    requested_task_name: str | None = None,
+) -> Signature | None:
+    if requested_task_name is not None:
+        if requested_task_name is not task_name:
+            return None
+
     task.create_processing_action(
         hash,
         parent_task_id,
@@ -25,20 +30,27 @@ def _register_task(
 
 
 @shared_task(bind=True, trail=True)
-def process_content(self, hash: str):
+def process_content(self, hash: str, task_name: str | None = None):
     tasks = []
-    register_task = partial(_register_task, hash, self.request.id)
-    tasks.append(
-        register_task(
-            constants.SUMMARY_TASK,
-            analyzer_tasks.summarize_content.si,  # type: ignore
-        )
-    )
-    tasks.append(
-        register_task(
-            constants.ENTITIES_TASK,
-            analyzer_tasks.extract_entity_relations.si,  # type: ignore
-        )
+    register_task = partial(
+        _register_task, hash, self.request.id, requested_task_name=task_name
     )
 
+    summarize_task = register_task(
+        constants.SUMMARY_TASK,
+        analyzer_tasks.summarize_content.si,  # type: ignore
+    )
+    if summarize_task is not None:
+        tasks.append(summarize_task)
+
+    extract_entities_task = register_task(
+        constants.ENTITIES_TASK,
+        analyzer_tasks.extract_entity_relations.si,  # type: ignore
+    )
+    if extract_entities_task is not None:
+        tasks.append(extract_entities_task)
+
+    if len(tasks) == 0:
+        print("No tasks requested")
+        return
     group(tasks).apply_async()

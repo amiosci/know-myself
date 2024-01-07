@@ -30,6 +30,31 @@ def get_task_result(id: str) -> str | None:
 
 
 @dataclasses.dataclass
+class TaskRequest:
+    task_name: str
+    hash: str
+
+    def __post_init__(self):
+        self.task_name = self.task_name.strip()
+        self.hash = self.hash.strip()
+
+
+def get_task_request(task_id: str) -> TaskRequest | None:
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as curs:
+            curs.execute(
+                "SELECT t.hash, t.task_name "
+                "from genai.process_tasks as t where t.task_id=%s",
+                (task_id,),
+            )
+            row = curs.fetchone()
+            if row is not None:
+                return TaskRequest(**row)
+
+            return None
+
+
+@dataclasses.dataclass
 class ProcessingRegistration:
     hash: str
     url: str

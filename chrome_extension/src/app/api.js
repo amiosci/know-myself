@@ -35,3 +35,19 @@ export const getTaskMetrics = async (taskId) => {
   const taskMetrics = await getTaskMetricsResponse.json();
   return taskMetrics;
 };
+
+export const reprocessTask = async (taskId) => {
+  const apiHost = await getApiHost();
+  const apiResponse = await fetch(`${apiHost}/tasks/${taskId}/action`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action: "reprocess",
+    }),
+  });
+
+  const apiResponseBody = await apiResponse.json();
+  return apiResponseBody;
+};

@@ -35,6 +35,7 @@ pydub = "*"
 librosa = "*"
 sentence-transformers = "*"
 chromadb = "*"
+fake-useragent = "*"
 
 [dev-packages]
 
