@@ -1,7 +1,9 @@
 import { addSafeEventListener } from "./utilities";
+import { getProcessingQueue, getTaskProcessingResults } from "./api";
 
-export const createResultsTable = (apiHost) => {
+export const createResultsTable = async () => {
   const resultsTable = document.querySelector(".results-table");
+  const resultsTableDataSource = await getTaskProcessingResults();
   Smart(
     ".results-table",
     class {
@@ -11,12 +13,7 @@ export const createResultsTable = (apiHost) => {
           editing: true,
           keyboardNavigation: true,
           dataSource: new Smart.DataAdapter({
-            dataSource: {
-              method: "GET",
-              url: `${apiHost}/process`,
-              async: false,
-              timeout: null,
-            },
+            dataSource: resultsTableDataSource,
             dataSourceType: "json",
             dataFields: ["url: string", "hash: string", "has_summary: bool"],
           }),
@@ -51,16 +48,18 @@ export const createResultsTable = (apiHost) => {
 
 export class TaskTableEventHandler {}
 
-export const createTasksTable = (apiHost, { onProcessRequest }) => {
+export const createTasksTable = async ({ onProcessRequest }) => {
   const tasksTable = document.querySelector(".tasks-table");
-
+  const retriableStates = ["FAILED", "TIMEOUT"];
   const configureSelectionEnabled = () => {
     tasksTable.enableSelect(
       tasksTable.dataSource.dataItemById
-        .filter((x) => ["FAILED", "TIMEOUT"].includes(x["status"]))
+        .filter((x) => retriableStates.includes(x["status"]))
         .map((x) => x.boundIndex)
     );
   };
+
+  const pendingTaskDataSource = await getProcessingQueue();
   Smart(
     ".tasks-table",
     class {
@@ -68,12 +67,7 @@ export const createTasksTable = (apiHost, { onProcessRequest }) => {
         return {
           sortMode: "one",
           dataSource: new Smart.DataAdapter({
-            dataSource: {
-              method: "GET",
-              url: `${apiHost}/tasks?filter=complete`,
-              async: false,
-              timeout: null,
-            },
+            dataSource: pendingTaskDataSource,
             dataSourceType: "json",
             dataFields: [
               "url: string",
@@ -114,32 +108,13 @@ export const createTasksTable = (apiHost, { onProcessRequest }) => {
   );
 
   const reprocessButtonElement = document.querySelector(
-    ".reproces-failed-tasks"
+    ".reprocess-failed-tasks"
   );
 
-  addSafeEventListener(tasksTable, "cellClick", (e) => {
-    const rowHash = e.detail.row.hash;
-    const rowUrl = e.detail.row.url;
-    const rowStatus = e.detail.row.status;
-    const rowTaskId = e.detail.row.taskId;
-    const rowId = e.detail.id;
-
+  addSafeEventListener(tasksTable, "change", (e) => {
     const selectedTasks = tasksTable.getSelection();
-    const hasPreviousSelected = selectedTasks.length > 0;
-    let enableReprocessButton = true;
-    if (hasPreviousSelected) {
-      const hasSingleSelected = selectedTasks.length === 1;
-      if (hasSingleSelected && selectedTasks[0] == rowId) {
-        enableReprocessButton = false;
-      }
-    }
-
-    reprocessButtonElement.disabled = !enableReprocessButton;
-  });
-
-  addSafeEventListener(tasksTable, "page", (e) => {
-    // maybe not needed now?
-    configureSelectionEnabled();
+    const disableReprocessButton = selectedTasks.length === 0;
+    reprocessButtonElement.disabled = disableReprocessButton;
   });
 
   addSafeEventListener(reprocessButtonElement, "click", async (e) => {

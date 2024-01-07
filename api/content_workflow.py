@@ -132,6 +132,7 @@ class TaskResultType(enum.Enum):
 @dataclasses.dataclass
 class TaskResult:
     result_type: TaskResultType
+    message: str | None = None
 
 
 class ProcessorBase(abc.ABC):
@@ -148,6 +149,11 @@ class SummarizeContent(ProcessorBase):
         content_provider = DocumentContentContainer()
         content = await content_provider.get_output_type(context)
         document_summary = await summarize.summarize_document(content)
+        if len(document_summary) == 0:
+            return TaskResult(
+                result_type=TaskResultType.FAILED,
+                message="No summary created for document",
+            )
         summary.save_summary(context.hash, document_summary)
         return TaskResult(result_type=TaskResultType.PROCESSED)
 
@@ -159,5 +165,10 @@ class ExtractContentRelations(ProcessorBase):
         if content_provider.has_processed(context):
             return TaskResult(result_type=TaskResultType.SKIPPED)
 
-        await content_provider.get_output_type(context)
+        extracted_entities = await content_provider.get_output_type(context)
+        if len(extracted_entities) == 0:
+            return TaskResult(
+                result_type=TaskResultType.FAILED,
+                message="No entities extracted for document",
+            )
         return TaskResult(result_type=TaskResultType.PROCESSED)

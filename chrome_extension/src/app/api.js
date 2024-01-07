@@ -23,6 +23,30 @@ export const getDocumentEntities = async (documentHash) => {
   return graphData;
 };
 
+export const getTaskProcessingResults = async () => {
+  const apiHost = await getApiHost();
+  const apiResponse = await fetch(`${apiHost}/process`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const apiResponseBody = await apiResponse.json();
+  return apiResponseBody;
+};
+
+export const getProcessingQueue = async () => {
+  const apiHost = await getApiHost();
+  const apiResponse = await fetch(`${apiHost}/tasks?type=pending&type=failed`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const apiResponseBody = await apiResponse.json();
+  return apiResponseBody;
+};
+
 export const getTaskMetrics = async (taskId) => {
   const apiHost = await getApiHost();
   const getTaskMetricsResponse = await fetch(

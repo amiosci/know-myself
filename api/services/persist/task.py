@@ -54,12 +54,22 @@ def get_task_request(task_id: str) -> TaskRequest | None:
             return None
 
 
+def set_retry_child(original_task_id: str, retry_task_id: str) -> None:
+    with get_connection() as conn:
+        with conn.cursor() as curs:
+            curs.execute(
+                "UPDATE genai.process_tasks SET retry_task_id=%s where task_id=%s",
+                (retry_task_id, original_task_id),
+            )
+
+
 @dataclasses.dataclass
 class ProcessingRegistration:
     hash: str
     url: str
     parent_id: str
     task_id: str
+    retry_task_id: str
     task_name: str
     status: str
     has_summary: bool = False
@@ -73,6 +83,9 @@ class ProcessingRegistration:
         if self.task_id:
             self.task_id = self.task_id.strip()
 
+        if self.retry_task_id:
+            self.retry_task_id = self.retry_task_id.strip()
+
         if self.task_name:
             self.task_name = self.task_name.strip()
 
@@ -81,7 +94,7 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as curs:
             curs.execute(
-                "SELECT t.hash, t.task_id, t.status, t.parent_id, t.task_name, "
+                "SELECT t.hash, t.retry_task_id, t.task_id, t.status, t.parent_id, t.task_name, "
                 "EXISTS(select 1 from genai.summaries where hash=t.hash) as has_summary, "
                 "(select url from kms.document_paths where hash=t.hash) as url "
                 "from genai.process_tasks as t",

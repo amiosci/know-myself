@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS genai.process_tasks (
     parent_id text not null,
     -- nullable, set when started
     task_id text,
+    -- nullable, only set if reprocess request is emitted
+    retry_task_id text,
     task_name char(40),
     status char(20),
     primary key(hash, task_name)

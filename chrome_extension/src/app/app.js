@@ -1,13 +1,12 @@
-import { getApiHost, addSafeEventListener } from "./utilities";
+import { addSafeEventListener } from "./utilities";
 import { configureDetailsDialog } from "./details_dialog";
 import { configureSettingsDialog } from "./settings_dialog";
 import { createResultsTable, createTasksTable } from "./tables";
 import { getDocumentSummary, getDocumentEntities, reprocessTask } from "./api";
 
 const init = async () => {
-  const apiHost = await getApiHost();
-  const resultsTable = createResultsTable(apiHost);
-  const tasksTable = createTasksTable(apiHost, {
+  const resultsTable = await createResultsTable();
+  const tasksTable = await createTasksTable({
     onProcessRequest: async (taskIds) => {
       await Promise.all(taskIds.map(reprocessTask));
     },
