@@ -1,5 +1,6 @@
 import dataclasses
 from psycopg2.extras import RealDictCursor
+from types import TracebackType
 
 from services.persist.utils import get_connection
 
@@ -72,6 +73,7 @@ class ProcessingRegistration:
     retry_task_id: str
     task_name: str
     status: str
+    status_reason: str
     has_summary: bool = False
 
     def __post_init__(self):
@@ -89,12 +91,16 @@ class ProcessingRegistration:
         if self.task_name:
             self.task_name = self.task_name.strip()
 
+        if self.status_reason:
+            self.status_reason = self.status_reason.strip()
+
 
 def get_processing_registrations() -> list[ProcessingRegistration]:
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as curs:
             curs.execute(
-                "SELECT t.hash, t.retry_task_id, t.task_id, t.status, t.parent_id, t.task_name, "
+                "SELECT t.hash, t.status_reason, t.retry_task_id, t.task_id, "
+                "t.status, t.parent_id, t.task_name, "
                 "EXISTS(select 1 from genai.summaries where hash=t.hash) as has_summary, "
                 "(select url from kms.document_paths where hash=t.hash) as url "
                 "from genai.process_tasks as t",
@@ -125,18 +131,30 @@ class ProcessTaskUpdater:
     def __enter__(self):
         return self
 
-    def set_status(self, status: str):
+    def set_status(self, status: str, status_reason: str | None = None):
+        column_updaters = ["status=%s"]
+        column_values = [status]
+        if status_reason is not None:
+            column_updaters.append("status_reason=%s")
+            column_values.append(status_reason)
         with get_connection() as conn:
             with conn.cursor() as curs:
                 print(f"setting status {status}")
                 curs.execute(
-                    "UPDATE genai.process_tasks SET status=%s WHERE hash=%s AND task_id=%s",
-                    ((status, self.hash, self.task_id)),
+                    "UPDATE genai.process_tasks SET "
+                    + ", ".join(column_updaters)
+                    + " WHERE hash=%s AND task_id=%s",
+                    (tuple(column_values) + (self.hash, self.task_id)),
                 )
 
-    def __exit__(self, exc_type: type | None, exc_val: Exception | None, traceback):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        traceback: TracebackType | None,
+    ):
         if exc_val is not None:
-            self.set_status("FAILED")
+            self.set_status("FAILED", str(exc_val))
 
         return True
 

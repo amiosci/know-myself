@@ -65,6 +65,7 @@ def register_routes(app: Flask):
                 "task_id": registration.task_id,
                 "task_name": registration.task_name,
                 "status": registration.status,
+                "status_reason": registration.status_reason,
             }
             for registration in registrations
         ]

@@ -75,6 +75,7 @@ export const createTasksTable = async ({ onProcessRequest }) => {
               "task_name: string",
               "task_id: string",
               "status: string",
+              "status_reason: string",
             ],
           }),
           selection: true,
@@ -93,8 +94,14 @@ export const createTasksTable = async ({ onProcessRequest }) => {
               allowEdit: false,
             },
             {
-              label: "Current status",
+              label: "Current Status",
               dataField: "status",
+              dataType: "string",
+              allowEdit: false,
+            },
+            {
+              label: "Status Reason",
+              dataField: "status_reason",
               dataType: "string",
               allowEdit: false,
             },

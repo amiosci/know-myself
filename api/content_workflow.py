@@ -168,7 +168,7 @@ class ProcessorBase(abc.ABC):
                 result_type=TaskResultType.FAILED,
                 message=str(e.args[0]),
             )
-        except Exception as e:
+        except BaseException as e:
             exception_writer = io.StringIO()
             traceback.print_exc(file=exception_writer)
             exception_message = exception_writer.read()

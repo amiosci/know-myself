@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS genai.process_tasks (
     retry_task_id text,
     task_name char(40),
     status char(20),
+    status_reason text,
     primary key(hash, task_name)
 );
 
