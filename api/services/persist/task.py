@@ -70,7 +70,6 @@ def set_retry_child(original_task_id: str, retry_task_id: str) -> None:
 class ProcessingRegistration:
     hash: str
     url: str
-    parent_id: str
     task_id: str
     retry_task_id: str
     task_name: str
@@ -83,7 +82,6 @@ class ProcessingRegistration:
         self.hash = self.hash.strip()
         self.url = self.url.strip()
         self.status = self.status.strip()
-        self.parent_id = self.parent_id.strip()
 
         if self.task_id:
             self.task_id = self.task_id.strip()
@@ -103,7 +101,7 @@ def get_processing_registrations() -> list[ProcessingRegistration]:
         with conn.cursor(cursor_factory=RealDictCursor) as curs:
             curs.execute(
                 "SELECT t.hash, t.status_reason, t.updated_at, t.retry_task_id, t.task_id, "
-                "t.status, t.parent_id, t.task_name, "
+                "t.status, t.task_name, "
                 "EXISTS(select 1 from genai.summaries where hash=t.hash) as has_summary, "
                 "(select url from kms.document_paths where hash=t.hash) as url "
                 "from genai.process_tasks as t",
