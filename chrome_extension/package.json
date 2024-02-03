@@ -2,7 +2,26 @@
     "name": "kms-chrome-extension",
     "version": "0.1.0",
     "devDependencies": {
-        "extension-cli": "^1.2.4"
+        "@testing-library/webdriverio": "^3.2.1",
+        "@types/chrome": "^0.0.260",
+        "@types/mocha": "^10.0.6",
+        "@types/node": "^20.11.16",
+        "@types/webpack": "^5.28.5",
+        "@wdio/browser-runner": "^8.29.7",
+        "@wdio/cli": "^8.29.7",
+        "@wdio/mocha-framework": "^8.29.3",
+        "@wdio/spec-reporter": "^8.29.7",
+        "@wdio/types": "^8.29.1",
+        "copy-webpack-plugin": "^12.0.2",
+        "create-wdio": "^8.4.6",
+        "extension-cli": "^1.2.4",
+        "mocha": "^10.2.0",
+        "ts-loader": "^9.5.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3",
+        "wdio-wait-for": "^3.0.10",
+        "web-ext": "^7.11.0",
+        "webpack-dev-server": "^4.15.1"
     },
     "dependencies": {
         "@shoelace-style/shoelace": "^2.12.0",
@@ -27,56 +46,10 @@
         "test/**/*"
     ],
     "scripts": {
-        "start": "xt-build -e dev -w",
-        "start:firefox": "xt-build -e dev -p firefox -w",
-        "build": "xt-build -e prod",
-        "build:firefox": "xt-build -e prod -p firefox",
-        "clean": "xt-clean",
-        "docs": "xt-docs",
-        "test": "xt-test",
-        "coverage": "nyc --reporter=lcov npm run test"
-    },
-    "xtbuild": {
-        "commands": "cp -r node_modules/smart-webcomponents-community/source/styles/font dist;cp -r node_modules/@shoelace-style/shoelace/dist dist/shoelace_dist",
-        "scss_bundles": [
-            {
-                "name": "smart-webcomponents",
-                "src": "node_modules/smart-webcomponents-community/source/styles/smart.default.css"
-            }
-        ],
-        "js_bundles": [
-            {
-                "name": "shoelace",
-                "src": [
-                    "node_modules/@shoelace-style/shoelace/dist/shoelace.js"
-                ]
-            },
-            {
-                "name": "smart-webcomponents",
-                "src": [
-                    "node_modules/smart-webcomponents-community/source/modules/**/*.js"
-                ]
-            },
-            {
-                "name": "app",
-                "src": "./src/app/**/*.js"
-            },
-            {
-                "name": "popup",
-                "src": "./src/popup/**/*.js"
-            },
-            {
-                "name": "service_worker",
-                "src": "./src/service_worker/**/*.js"
-            }
-        ]
-    },
-    "xtdocs": {
-        "source": {
-            "include": [
-                "README.md",
-                "src"
-            ]
-        }
+        "clean": "rm -rf dist",
+        "predevelop": "npm run clean",
+        "develop": "webpack --config webpack/webpack.config.ts",
+        "build": "webpack --config webpack/webpack.prod.ts",
+        "wdio": "wdio run ./wdio.conf.ts"
     }
 }

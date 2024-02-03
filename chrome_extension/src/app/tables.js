@@ -60,7 +60,8 @@ export const createResultsTable = async () => {
 export const createTasksTable = async ({ onProcessRequest }) => {
   const tasksTable = document.querySelector(".tasks-table");
 
-  const configureSelectionDisabled = () => {
+  const configureSelectionDisabled = (why) => {
+    console.log(why);
     const retriableStates = ["FAILED", "TIMEOUT"];
     tasksTable.dataSource.dataItemById
       .filter((x) => !retriableStates.includes(x["status"]))
@@ -78,6 +79,7 @@ export const createTasksTable = async ({ onProcessRequest }) => {
           dataSource: new Smart.DataAdapter({
             dataSource: pendingTaskDataSource,
             dataSourceType: "json",
+            keyDataField: "task_id",
             dataFields: [
               "url: string",
               "hash: string",
@@ -85,7 +87,7 @@ export const createTasksTable = async ({ onProcessRequest }) => {
               "task_id: string",
               "status: string",
               "status_reason: string",
-              "updated_at: date",
+              "updated_at: string",
             ],
           }),
           selection: true,
@@ -118,11 +120,16 @@ export const createTasksTable = async ({ onProcessRequest }) => {
             {
               label: "Last Activity",
               dataField: "updated_at",
-              dataType: "date",
+              dataType: "string",
               allowEdit: false,
             },
           ],
-          onLoad: configureSelectionDisabled,
+          onUpdateComplete: () =>
+            configureSelectionDisabled("onupdatecomplete"),
+          dataTransform: (row) => {
+            console.log(row);
+          },
+          onLoad: () => configureSelectionDisabled("onload"),
         };
       }
     }
@@ -155,6 +162,7 @@ export const createTasksTable = async ({ onProcessRequest }) => {
   addSafeEventListener(refreshButtonElement, "click", async (e) => {
     const updatedDataSource = await getProcessingQueue();
     tasksTable.dataSource = updatedDataSource;
+    configureSelectionDisabled("refresh");
     // reset checkboxes
     tasksTable.selected = [];
   });

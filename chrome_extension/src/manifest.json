@@ -6,14 +6,16 @@
     "action": {
         "default_title": "Click to view MyndGraph",
         "default_popup": "popup.html"
-        },
+    },
     "permissions": [
         "readingList",
         "tabs",
         "activeTab",
+        "tabCapture",
         "contextMenus",
         "bookmarks",
-        "storage"
+        "storage",
+        "sidePanel"
     ],
     "host_permissions": [
         "http://*/*",

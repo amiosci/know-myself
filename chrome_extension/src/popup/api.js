@@ -1,4 +1,4 @@
-export const getDocumentAnnotation = async ({ hash }) => {
+export const getDocumentAnnotations = async ({ hash }) => {
   const apiHost = await getApiHost();
   const getAnnotationResponse = await fetch(
     `${apiHost}/documents/${hash}/annotations`,

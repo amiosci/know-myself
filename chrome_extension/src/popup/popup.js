@@ -1,4 +1,4 @@
-import { registerDocument } from "./api";
+import { registerDocument, getDocumentAnnotations } from "./api";
 
 const getCurrentTab = async () => {
   const queryOptions = { active: true, lastFocusedWindow: true };
@@ -26,6 +26,15 @@ const init = async () => {
       title,
     });
   });
+
+  const documentAnnotationList = document.querySelector(
+    ".document-annotation-list"
+  );
+
+  const annotations = await getDocumentAnnotations();
+  for (const annotation of annotations) {
+    console.log(annotation);
+  }
 };
 
 document.readyState === "complete" ? init() : (window.onload = init);

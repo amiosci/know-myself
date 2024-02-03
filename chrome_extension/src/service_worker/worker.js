@@ -9,12 +9,23 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     });
   }
 
-  chrome.contextMenus.create({
-    enabled: true,
-    title: "Process contents",
-    id: "knowledge_agent.send_url",
-    contexts: ["all"],
-  });
+  const contextMenuOptions = {
+    "knowledge_agent.send_url": "Process Contents",
+    "knowledge_agent.add_annotation": "Add Annotation",
+  };
+
+  for (const menuId in contextMenuOptions) {
+    if (Object.hasOwnProperty.call(contextMenuOptions, menuId)) {
+      const menuTitle = contextMenuOptions[menuId];
+
+      chrome.contextMenus.create({
+        enabled: true,
+        title: menuTitle,
+        id: menuId,
+        contexts: ["all"],
+      });
+    }
+  }
 
   // ingest all pre-registered reading list items
   const items = await chrome.readingList.query({});
@@ -26,21 +37,88 @@ chrome.readingList.onEntryAdded.addListener(async (entry) => {
   await registerDocument(entry);
 });
 
+const toggleRecording = async ({ id }) => {
+  const existingContexts = await chrome.runtime.getContexts({});
+
+  const offscreenDocument = existingContexts.find(
+    (c) => c.contextType === 'OFFSCREEN_DOCUMENT'
+  );
+
+  let recording = false;
+  if (!offscreenDocument) {
+    await chrome.offscreen.createDocument({
+      url: 'recorder.html',
+      reasons: ['USER_MEDIA'],
+      justification: 'Recording from chrome.tabCapture API',
+    });
+  } else {
+    recording = offscreenDocument.documentUrl.endsWith('#recording');
+  }
+
+  if (recording) {
+    chrome.runtime.sendMessage({
+      type: 'stop-recording',
+      target: 'offscreen'
+    });
+    chrome.action.setIcon({ path: 'icons/not-recording.png' });
+    return;
+  }
+
+  // Get a MediaStream for the active tab.
+  const streamId = await chrome.tabCapture.getMediaStreamId({
+    targetTabId: id
+  });
+
+  // Send the stream ID to the offscreen document to start recording.
+  chrome.runtime.sendMessage({
+    type: 'start-recording',
+    target: 'offscreen',
+    data: streamId
+  });
+};
+
+chrome.runtime.onMessage.addListener(async (message) => {
+  if (message.target === 'recorder-parent') {
+    switch (message.type) {
+      case 'recording-completed':
+        // save recording?
+        // extract image?
+        const recordingResponse = message.data;
+        console.log(recordingResponse);
+        break;
+      default:
+        throw new Error('Unrecognized message:', message.type);
+    }
+  }
+});
 chrome.contextMenus.onClicked.addListener(
-  async ({ frameUrl, selectionText, linkUrl, menuItemId }, { title }) => {
+  async ({ frameUrl, selectionText, linkUrl, menuItemId, id }, { title }) => {
     const hasSelectedText = selectionText !== undefined;
     const hasSelectedLink = linkUrl !== undefined;
 
-    const itemHash = await registerDocument({
-      url: frameUrl,
-      title: title,
-    });
-
-    if (hasSelectedText) {
-      await addDocumentAnnotation({
-        hash: itemHash,
-        annotation: selectionText,
+    // we need a hash to add an annotation.
+    // TODO: Register document without implicit processing requests
+    if (
+      menuItemId === "knowledge_agent.add_annotation" ||
+      menuItemId === "knowledge_agent.send_url"
+    ) {
+      const itemHash = await registerDocument({
+        url: frameUrl,
+        title: title,
       });
+
+      if (hasSelectedText) {
+        await addDocumentAnnotation({
+          hash: itemHash,
+          annotation: selectionText,
+        });
+      }
+
+      return;
+    }
+
+    if (menuItemId === "knowledge_agent.capture_document") {
+      await toggleRecording(id);
     }
   }
 );
