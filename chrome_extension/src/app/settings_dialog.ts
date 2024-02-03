@@ -1,6 +1,9 @@
+import * as shoelace from '@shoelace-style/shoelace';
+import { getApiHost } from "./utilities";
+
 export const configureSettingsDialog = async () => {
-  const settingsDialog = document.querySelector(".settings-dialog");
-  const settingsApiHost = settingsDialog.querySelector(".settings-api-host");
+  const settingsDialog: shoelace.SlDialog = document.querySelector(".settings-dialog");
+  const settingsApiHost: shoelace.SlInput = settingsDialog.querySelector(".settings-api-host");
 
   const settingsSubmitButton = settingsDialog.querySelector(".settings-submit");
   settingsSubmitButton.addEventListener("click", async () => {

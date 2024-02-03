@@ -8,10 +8,10 @@ const config: webpack.Configuration = {
     mode: 'development',
     target: 'web',
     entry: {
-        app: './src/app/app.js',
-        popup: './src/popup/popup.js',
-        service_worker: './src/service_worker/worker.js',
-        recorder: './src/recorder.js',
+        app: './src/app/app.ts',
+        popup: './src/popup/popup.ts',
+        service_worker: './src/service_worker/worker.ts',
+        recorder: './src/recorder.ts',
     },
     module: {
         rules: [

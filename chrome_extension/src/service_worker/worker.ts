@@ -37,7 +37,7 @@ chrome.readingList.onEntryAdded.addListener(async (entry) => {
   await registerDocument(entry);
 });
 
-const toggleRecording = async ({ id }) => {
+const toggleRecording = async (id: number) => {
   const existingContexts = await chrome.runtime.getContexts({});
 
   const offscreenDocument = existingContexts.find(
@@ -46,9 +46,9 @@ const toggleRecording = async ({ id }) => {
 
   let recording = false;
   if (!offscreenDocument) {
-    await chrome.offscreen.createDocument({
+    chrome.offscreen.createDocument({
       url: 'recorder.html',
-      reasons: ['USER_MEDIA'],
+      reasons: [chrome.offscreen.Reason.USER_MEDIA],
       justification: 'Recording from chrome.tabCapture API',
     });
   } else {
@@ -65,19 +65,19 @@ const toggleRecording = async ({ id }) => {
   }
 
   // Get a MediaStream for the active tab.
-  const streamId = await chrome.tabCapture.getMediaStreamId({
+  chrome.tabCapture.getMediaStreamId({
     targetTabId: id
-  });
-
-  // Send the stream ID to the offscreen document to start recording.
-  chrome.runtime.sendMessage({
-    type: 'start-recording',
-    target: 'offscreen',
-    data: streamId
+  }, (streamId) => {
+    // Send the stream ID to the offscreen document to start recording.
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'offscreen',
+      data: streamId
+    });
   });
 };
 
-chrome.runtime.onMessage.addListener(async (message) => {
+chrome.runtime.onMessage.addListener(async (message: kms.RecorderResponse) => {
   if (message.target === 'recorder-parent') {
     switch (message.type) {
       case 'recording-completed':
@@ -87,12 +87,12 @@ chrome.runtime.onMessage.addListener(async (message) => {
         console.log(recordingResponse);
         break;
       default:
-        throw new Error('Unrecognized message:', message.type);
+        throw new Error(`Unrecognized message: ${message.type}`);
     }
   }
 });
 chrome.contextMenus.onClicked.addListener(
-  async ({ frameUrl, selectionText, linkUrl, menuItemId, id }, { title }) => {
+  async ({ frameUrl, selectionText, linkUrl, menuItemId, frameId }, { title }) => {
     const hasSelectedText = selectionText !== undefined;
     const hasSelectedLink = linkUrl !== undefined;
 
@@ -118,7 +118,7 @@ chrome.contextMenus.onClicked.addListener(
     }
 
     if (menuItemId === "knowledge_agent.capture_document") {
-      await toggleRecording(id);
+      await toggleRecording(frameId);
     }
   }
 );

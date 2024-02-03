@@ -15,7 +15,7 @@ const init = async () => {
   const openForDocument = configureDetailsDialog();
   await configureSettingsDialog();
 
-  addSafeEventListener(resultsTable, "cellClick", async (e) => {
+  addSafeEventListener(resultsTable, "cellClick", async (e: kms.ResultTableRowEvent) => {
     const rowHash = e.detail.row.hash;
     const rowUrl = e.detail.row.url;
 

@@ -31,7 +31,9 @@ const init = async () => {
     ".document-annotation-list"
   );
 
-  const annotations = await getDocumentAnnotations();
+  const annotations = await getDocumentAnnotations({
+    hash: '' // TODO: Get document hash
+  });
   for (const annotation of annotations) {
     console.log(annotation);
   }

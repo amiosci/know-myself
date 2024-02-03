@@ -1,6 +1,7 @@
 import DirectedGraph from "graphology";
 import Sigma from "sigma";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import * as shoelace from '@shoelace-style/shoelace';
 import FA2LayoutSupervisor from "graphology-layout-forceatlas2/worker";
 import {
   connectedComponents,
@@ -12,11 +13,11 @@ import Color from "colorjs.io";
 import { removeAllChildNodes, addSafeEventListener } from "./utilities";
 
 export const configureDetailsDialog = () => {
-  const detailsDialog = document.querySelector(".document-dialog");
-  const summaryElement = detailsDialog.querySelector(
+  const detailsDialog: shoelace.SlDialog = document.querySelector(".document-dialog");
+  const summaryElement: shoelace.SlDetails = detailsDialog.querySelector(
     ".document-summary-content"
   );
-  const entitiesElement = detailsDialog.querySelector(
+  const entitiesElement: shoelace.SlDetails = detailsDialog.querySelector(
     ".document-entities-content"
   );
   const urlElement = detailsDialog.querySelector(".document-dialog-url");
@@ -27,7 +28,6 @@ export const configureDetailsDialog = () => {
     // detailsDialog.hide();
     window.open(urlElement.textContent);
   });
-
   // Graph context menu
   const [graphContextMenuElement, resetGraphContextMenu] =
     createGraphContextMenu();
@@ -54,10 +54,12 @@ export const configureDetailsDialog = () => {
       debugger;
     }
 
+    type NodeCoordinate = [string, boolean]
+
     const getNodeAtCoordinate = (
       { x, y },
       { minimumDistance = 1, distanceTolerance = 0.1 } = {}
-    ) => {
+    ): NodeCoordinate => {
       const nodeDistances = componentGraph.mapNodes((_, attr) => {
         const positionDeltas = {
           x: Math.abs(attr.x - x),
@@ -89,7 +91,7 @@ export const configureDetailsDialog = () => {
 
     const graphSettings = forceAtlas2.inferSettings(componentGraph);
     const layout = new FA2LayoutSupervisor(componentGraph, {
-      iterations: 5,
+      // iterations: 5,
       settings: graphSettings,
     });
 
@@ -101,7 +103,7 @@ export const configureDetailsDialog = () => {
       // TODO: Remove and fix tab loading
       allowInvalidContainer: true,
       renderEdgeLabels: true,
-      enableEdgeClickEvents: true,
+      enableEdgeEvents: true,
     });
 
     defaultLogGraphEvents(componentGraph, graphRenderer);
@@ -124,7 +126,7 @@ export const configureDetailsDialog = () => {
       resetGraphContextMenu();
       if (nodeInContext) {
         console.log(`creating context menu for ${closestNode}`);
-        graphContextMenuElement.setAttribute("selected-node", closestNode);
+        (graphContextMenuElement as Element).setAttribute("selected-node", closestNode);
 
         const canvasCoords = {
           x: event.x,
@@ -133,7 +135,7 @@ export const configureDetailsDialog = () => {
 
         // add context menu
         graphRenderer.getContainer().appendChild(graphContextMenuElement);
-        Object.assign(graphContextMenuElement.style, {
+        Object.assign((graphContextMenuElement as HTMLElement).style, {
           left: `${Math.abs(canvasCoords.x)}px`,
           top: `${Math.abs(canvasCoords.y)}px`,
           visibility: "initial",
@@ -187,7 +189,7 @@ export const configureDetailsDialog = () => {
     urlElement.textContent = url;
 
     if (entities.length === 0) {
-      entitiesElement.setAttribute("disabled", true);
+      entitiesElement.setAttribute("disabled", 'true');
     } else {
       entitiesElement.removeAttribute("disabled");
       const [graph, graphTabMap] = loadGraph(entities);
@@ -274,20 +276,21 @@ export const configureDetailsDialog = () => {
   return openForDocument;
 };
 
-const createGraphContextMenu = () => {
-  const graphContextMenuElement = document.querySelector(".graph-context-menu");
+type CreateGraphContextMenuResponse = [HTMLElement | Element, () => void]
+const createGraphContextMenu = (): CreateGraphContextMenuResponse => {
+  const graphContextMenuElement: HTMLElement | Element = document.querySelector(".graph-context-menu");
   const resetGraphContextMenu = () => {
-    graphContextMenuElement.style.visibility = "hidden";
+    (graphContextMenuElement as HTMLElement).style.visibility = "hidden";
     graphContextMenuElement.removeAttribute("selected-node");
   };
 
   const menuItemActions = {
-    documents: (node) => {},
-    update: (node) => {},
-    delete: (node) => {},
+    documents: (node) => { },
+    update: (node) => { },
+    delete: (node) => { },
   };
 
-  addSafeEventListener(graphContextMenuElement, "sl-select", (event) => {
+  addSafeEventListener(graphContextMenuElement, "sl-select", (event: kms.GraphSelectEvent) => {
     const item = event.detail.item.value;
     const node = graphContextMenuElement.getAttribute("selected-node");
     console.log(`${node}: ${item}`);
@@ -344,6 +347,7 @@ const loadGraph = (graphData) => {
     }
   );
 
+  // @ts-ignore: 
   const nodeColorRange = BLUE.steps(RED, {
     outputSpace: "srgb",
     // Add 1 to support nodes without connections

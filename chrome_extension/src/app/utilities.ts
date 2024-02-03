@@ -3,14 +3,15 @@ export const getApiHost = async () => {
   return apiHost["kms.apihost"] || "http://127.0.0.1:5000";
 };
 
-export const removeAllChildNodes = (parent) => {
+export const removeAllChildNodes = (parent: Element) => {
   while (parent.firstChild) {
     parent.removeChild(parent.firstChild);
   }
 };
 
-export const addSafeEventListener = (element, eventName, eventHandler) => {
-  const safeEvent = (event) => {
+export const addSafeEventListener = <Type extends Event>(
+  element: Element, eventName: string, eventHandler: (event: Type) => void) => {
+  const safeEvent = (event: Type) => {
     if (event.target !== element) {
       return;
     }

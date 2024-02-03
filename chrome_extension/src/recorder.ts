@@ -1,4 +1,4 @@
-chrome.runtime.onMessage.addListener(async (message) => {
+chrome.runtime.onMessage.addListener(async (message: kms.RecorderRequest) => {
     if (message.target === 'offscreen') {
         switch (message.type) {
             case 'start-recording':
@@ -8,15 +8,15 @@ chrome.runtime.onMessage.addListener(async (message) => {
                 stopRecording();
                 break;
             default:
-                throw new Error('Unrecognized message:', message.type);
+                throw new Error(`Unrecognized message: ${message.type}`);
         }
     }
 });
 
-let recorder;
+let recorder: MediaRecorder;
 let data = [];
 
-const startRecording = async (streamId) => {
+const startRecording = async (streamId: number) => {
     if (recorder?.state === 'recording') {
         throw new Error('Called startRecording while recording is in progress.');
     }
@@ -29,6 +29,8 @@ const startRecording = async (streamId) => {
         //     }
         // },
         video: {
+            // @ts-ignore: Valid according to Chrome spec
+            // https://developer.chrome.com/docs/extensions/reference/api/tabCapture#stream-ids
             mandatory: {
                 chromeMediaSource: 'tab',
                 chromeMediaSourceId: streamId
@@ -52,14 +54,16 @@ const startRecording = async (streamId) => {
         const blobUrl = URL.createObjectURL(blob);
         window.open(blobUrl, '_blank');
 
-        chrome.runtime.sendMessage({
+        const recorderResponse: kms.RecorderResponse = {
             type: 'recording-completed',
             target: 'recorder-parent',
             data: {
                 tabId: streamId,
                 url: blobUrl,
             }
-        });
+        };
+
+        chrome.runtime.sendMessage(recorderResponse);
 
 
         // Clear state ready for next recording

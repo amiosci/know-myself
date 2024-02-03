@@ -1,6 +1,6 @@
 import { getApiHost } from "./utilities";
 
-export const getDocumentSummary = async (documentHash) => {
+export const getDocumentSummary = async (documentHash: string) => {
   const apiHost = await getApiHost();
   const getSummaryResponse = await fetch(`${apiHost}/summary/${documentHash}`, {
     method: "GET",
@@ -10,7 +10,7 @@ export const getDocumentSummary = async (documentHash) => {
   return summaryResponse;
 };
 
-export const getDocumentEntities = async (documentHash) => {
+export const getDocumentEntities = async (documentHash: string) => {
   const apiHost = await getApiHost();
   const getEntitiesResponse = await fetch(
     `${apiHost}/entities/${documentHash}`,
@@ -35,7 +35,10 @@ export const getTaskProcessingResults = async () => {
   return apiResponseBody;
 };
 
-export const getProcessingQueue = async () => {
+type ProcessingQueueResponse = {
+
+};
+export const getProcessingQueue = async (): Promise<ProcessingQueueResponse> => {
   const apiHost = await getApiHost();
   const apiResponse = await fetch(`${apiHost}/tasks?type=pending&type=failed`, {
     method: "GET",
@@ -43,7 +46,7 @@ export const getProcessingQueue = async () => {
       "Content-Type": "application/json",
     },
   });
-  const apiResponseBody = await apiResponse.json();
+  const apiResponseBody: ProcessingQueueResponse = await apiResponse.json();
   return apiResponseBody;
 };
 
