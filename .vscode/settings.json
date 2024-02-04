@@ -15,7 +15,8 @@
         "**/.venv": true,
         "**/__pycache__": true,
         "**/node_modules": true,
-        "**/.nyc_output": true
+        "**/.nyc_output": true,
+        "chrome_extension/dist": true,
     },
     "python.analysis.typeCheckingMode": "basic",
     "editor.formatOnSave": true

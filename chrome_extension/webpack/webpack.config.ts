@@ -61,7 +61,6 @@ const config: webpack.Configuration = {
                     from: 'src/manifest.json',
                     to: '.'
                 }
-
             ]
         })
     ]

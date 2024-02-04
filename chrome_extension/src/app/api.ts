@@ -23,7 +23,7 @@ export const getDocumentEntities = async (documentHash: string) => {
   return graphData;
 };
 
-export const getTaskProcessingResults = async () => {
+export const getTaskProcessingResults = async (): Promise<kms.TaskProcessingResult[]> => {
   const apiHost = await getApiHost();
   const apiResponse = await fetch(`${apiHost}/process`, {
     method: "GET",
@@ -35,10 +35,7 @@ export const getTaskProcessingResults = async () => {
   return apiResponseBody;
 };
 
-type ProcessingQueueResponse = {
-
-};
-export const getProcessingQueue = async (): Promise<ProcessingQueueResponse> => {
+export const getProcessingQueue = async (): Promise<kms.TaskQueueRecord[]> => {
   const apiHost = await getApiHost();
   const apiResponse = await fetch(`${apiHost}/tasks?type=pending&type=failed`, {
     method: "GET",
@@ -46,7 +43,7 @@ export const getProcessingQueue = async (): Promise<ProcessingQueueResponse> => 
       "Content-Type": "application/json",
     },
   });
-  const apiResponseBody: ProcessingQueueResponse = await apiResponse.json();
+  const apiResponseBody = await apiResponse.json();
   return apiResponseBody;
 };
 
