@@ -1,4 +1,4 @@
-import { addSafeEventListener } from "./utilities";
+import { addSafeEventListener, safeQuerySelector } from "../utilities";
 import { getProcessingQueue, getTaskProcessingResults } from "./api";
 
 import { GridOptions, IRowNode, RowClickedEvent, createGrid } from 'ag-grid-community';
@@ -8,7 +8,7 @@ type ResultsTableEvents = {
 }
 
 export const createResultsTable = async (events: ResultsTableEvents) => {
-  const resultsTable: HTMLElement = document.querySelector(".results-table");
+  const resultsTable = safeQuerySelector<HTMLElement>(".results-table");
   const resultsTableData = await getTaskProcessingResults();
 
   const gridOptions: GridOptions = {
@@ -24,7 +24,7 @@ export const createResultsTable = async (events: ResultsTableEvents) => {
 
   resultsGrid.addEventListener('rowClicked',
     (event: RowClickedEvent<kms.TaskProcessingResult>) => {
-      events.onRowClicked(event.data);
+      events.onRowClicked(event.data!);
     });
 
   return resultsGrid;
@@ -35,12 +35,12 @@ type CreateTasksTableRequest = {
 }
 
 export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableRequest) => {
-  const tasksTable: HTMLElement = document.querySelector(".tasks-table");
+  const tasksTable = safeQuerySelector<HTMLElement>(".tasks-table");
   const pendingTasksData = await getProcessingQueue();
 
   const canSelectRow = (rowData: IRowNode<kms.TaskQueueRecord>): boolean => {
     const retriableStates = ["FAILED", "TIMEOUT"];
-    return retriableStates.includes(rowData.data.status);
+    return retriableStates.includes(rowData.data!.status);
   };
 
   const gridOptions: GridOptions<kms.TaskQueueRecord> = {
@@ -57,7 +57,7 @@ export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableReq
     isRowSelectable: canSelectRow,
   };
   const tasksGrid = createGrid<kms.TaskQueueRecord>(tasksTable, gridOptions);
-  const reprocessButtonElement: HTMLButtonElement = document.querySelector(
+  const reprocessButtonElement = safeQuerySelector<HTMLButtonElement>(
     ".reprocess-failed-tasks"
   );
 
@@ -77,7 +77,7 @@ export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableReq
     await onProcessRequest(taskIds);
   });
 
-  const refreshButtonElement = document.querySelector(
+  const refreshButtonElement = safeQuerySelector(
     ".refresh-processing-queue"
   );
 

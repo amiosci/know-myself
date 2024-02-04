@@ -51,7 +51,7 @@ const config: webpack.Configuration = {
                     to: '.'
                 },
                 {
-                    from: 'src/**/*.html',
+                    from: 'html/*.html',
                     // copy to output root
                     to({ context, absoluteFilename }) {
                         return "./[name][ext]";

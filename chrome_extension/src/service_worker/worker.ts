@@ -52,7 +52,7 @@ const toggleRecording = async (id: number) => {
       justification: 'Recording from chrome.tabCapture API',
     });
   } else {
-    recording = offscreenDocument.documentUrl.endsWith('#recording');
+    recording = offscreenDocument.documentUrl?.endsWith('#recording') ?? false;
   }
 
   if (recording) {
@@ -92,7 +92,12 @@ chrome.runtime.onMessage.addListener(async (message: kms.RecorderResponse) => {
   }
 });
 chrome.contextMenus.onClicked.addListener(
-  async ({ frameUrl, selectionText, linkUrl, menuItemId, frameId }, { title }) => {
+  async ({ frameUrl, selectionText, linkUrl, menuItemId, frameId }, selectedTab) => {
+    if (selectedTab === undefined) {
+      debugger;
+      return;
+    }
+
     const hasSelectedText = selectionText !== undefined;
     const hasSelectedLink = linkUrl !== undefined;
 
@@ -103,8 +108,8 @@ chrome.contextMenus.onClicked.addListener(
       menuItemId === "knowledge_agent.send_url"
     ) {
       const itemHash = await registerDocument({
-        url: frameUrl,
-        title: title,
+        url: frameUrl!,
+        title: selectedTab.title!,
       });
 
       if (hasSelectedText) {
@@ -118,7 +123,7 @@ chrome.contextMenus.onClicked.addListener(
     }
 
     if (menuItemId === "knowledge_agent.capture_document") {
-      await toggleRecording(frameId);
+      await toggleRecording(frameId!);
     }
   }
 );

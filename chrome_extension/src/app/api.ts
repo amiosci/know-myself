@@ -1,4 +1,4 @@
-import { getApiHost } from "./utilities";
+import { getApiHost } from "../utilities";
 
 export const getDocumentSummary = async (documentHash: string) => {
   const apiHost = await getApiHost();

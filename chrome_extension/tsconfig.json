@@ -7,5 +7,6 @@
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitOverride": true,
+        "strictNullChecks": true
     }
 }

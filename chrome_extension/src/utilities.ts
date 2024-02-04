@@ -24,3 +24,12 @@ export const addSafeEventListener = <Type extends Event>(
   // return to capture inline methods
   return safeEvent;
 };
+
+export const safeQuerySelector = <Type extends Element | HTMLElement = Element>(selector: string, parentElement: Element | Document = document): Type => {
+  const element = parentElement.querySelector(selector);
+  if (element === null) {
+    throw new ReferenceError(`No element found for ${selector}`);
+  }
+
+  return element as Type;
+};

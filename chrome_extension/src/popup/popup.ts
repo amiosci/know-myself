@@ -1,4 +1,5 @@
 import { registerDocument, getDocumentAnnotations } from "./api";
+import { safeQuerySelector } from "../utilities";
 
 const getCurrentTab = async () => {
   const queryOptions = { active: true, lastFocusedWindow: true };
@@ -11,23 +12,26 @@ const init = async () => {
   const extensionUrl = `chrome-extension://${chrome.runtime.id}`;
   const extensionHome = `${extensionUrl}/index.html`;
 
-  const openSettingsButton = document.querySelector(".open-extension-page");
+  const openSettingsButton = safeQuerySelector(".open-extension-page");
   openSettingsButton.addEventListener("click", async () => {
     window.open(extensionHome);
   });
 
-  const processCurrentPageButton = document.querySelector(
+  const processCurrentPageButton = safeQuerySelector(
     ".process-current-page"
   );
   processCurrentPageButton.addEventListener("click", async () => {
     const { title, url } = await getCurrentTab();
+    if (title === undefined || url === undefined) {
+      return;
+    }
     await registerDocument({
       url,
       title,
     });
   });
 
-  const documentAnnotationList = document.querySelector(
+  const documentAnnotationList = safeQuerySelector(
     ".document-annotation-list"
   );
 

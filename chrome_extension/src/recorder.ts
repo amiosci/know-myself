@@ -82,6 +82,10 @@ const startRecording = async (streamId: number) => {
 }
 
 const stopRecording = async () => {
+    if (recorder === null) {
+        throw new Error('Recorder not started');
+    }
+
     recorder.stop();
 
     // Stopping the tracks makes sure the recording icon in the tab is removed.

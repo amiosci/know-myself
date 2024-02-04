@@ -1,5 +1,5 @@
 export async function openExtensionPopup(this: WebdriverIO.Browser, extensionName: string, popupUrl = 'popup.html') {
-    if (!(this.capabilities as WebdriverIO.Capabilities).browserName.includes('chrome')) {
+    if (!((this.capabilities) as WebdriverIO.Capabilities).browserName?.includes('chrome')) {
         throw new Error('This command only works with Chrome')
     }
     await this.url('chrome://extensions/')

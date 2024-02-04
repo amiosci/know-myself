@@ -10,32 +10,32 @@ import {
 import { subgraph } from "graphology-operators";
 import Color from "colorjs.io";
 
-import { removeAllChildNodes, addSafeEventListener } from "./utilities";
+import { removeAllChildNodes, addSafeEventListener, safeQuerySelector } from "../utilities";
 import AbstractGraph, { Attributes } from "graphology-types";
 import { SubGraphNodes } from "graphology-operators/subgraph";
 
 export const configureDetailsDialog = () => {
-  const detailsDialog: shoelace.SlDialog = document.querySelector(".document-dialog");
-  const summaryElement: shoelace.SlDetails = detailsDialog.querySelector(
-    ".document-summary-content"
-  );
-  const entitiesElement: shoelace.SlDetails = detailsDialog.querySelector(
-    ".document-entities-content"
-  );
-  const urlElement = detailsDialog.querySelector(".document-dialog-url");
+  const detailsDialog: shoelace.SlDialog = safeQuerySelector(".document-dialog") as shoelace.SlDialog;
+  const summaryElement: shoelace.SlDetails = safeQuerySelector(
+    ".document-summary-content", detailsDialog
+  ) as shoelace.SlDetails;
+  const entitiesElement: shoelace.SlDetails = safeQuerySelector(
+    ".document-entities-content", detailsDialog
+  ) as shoelace.SlDetails;
+  const urlElement = safeQuerySelector(".document-dialog-url", detailsDialog);
 
-  const newWindowButton = detailsDialog.querySelector(".new-window");
+  const newWindowButton = safeQuerySelector(".new-window", detailsDialog);
   addSafeEventListener(newWindowButton, "click", () => {
     // maybe close?!?
     // detailsDialog.hide();
-    window.open(urlElement.textContent);
+    window.open(urlElement.textContent!);
   });
   // Graph context menu
   const [graphContextMenuElement, resetGraphContextMenu] =
     createGraphContextMenu();
 
-  const graphContainerElement = detailsDialog.querySelector(
-    ".entity-graph-container"
+  const graphContainerElement = safeQuerySelector(
+    ".entity-graph-container", detailsDialog
   );
   let graphRenderer: Sigma | null = null;
 
@@ -121,7 +121,7 @@ export const configureDetailsDialog = () => {
       event.preventSigmaDefault();
       event.original.preventDefault();
 
-      const clickedPosition = graphRenderer.viewportToGraph(event);
+      const clickedPosition = graphRenderer!.viewportToGraph(event);
       const [closestNode, nodeInContext] = getNodeAtCoordinate(clickedPosition);
 
       // always reset style before conditionally reparenting it
@@ -136,7 +136,7 @@ export const configureDetailsDialog = () => {
         };
 
         // add context menu
-        graphRenderer.getContainer().appendChild(graphContextMenuElement);
+        graphRenderer!.getContainer().appendChild(graphContextMenuElement);
         Object.assign((graphContextMenuElement as HTMLElement).style, {
           left: `${Math.abs(canvasCoords.x)}px`,
           top: `${Math.abs(canvasCoords.y)}px`,
@@ -152,7 +152,7 @@ export const configureDetailsDialog = () => {
       event.original.preventDefault();
 
       // TODO: test node events after sigmajs 3.0 exits beta
-      const clickedPosition = graphRenderer.viewportToGraph(event);
+      const clickedPosition = graphRenderer!.viewportToGraph(event);
       const [closestNode, nodeInContext] = getNodeAtCoordinate(clickedPosition);
 
       if (nodeInContext) {
@@ -170,7 +170,7 @@ export const configureDetailsDialog = () => {
     // remove context-menu if you are moving the body
     mouseCaptor.addListener("mousemove", (_) => {
       const moving =
-        graphRenderer.getCamera().isAnimated() ||
+        graphRenderer!.getCamera().isAnimated() ||
         mouseCaptor.isMoving ||
         mouseCaptor.draggedEvents ||
         mouseCaptor.currentWheelDirection;
@@ -210,9 +210,7 @@ export const configureDetailsDialog = () => {
       // render graph on tab change
       graphTabGroup.addEventListener("sl-tab-show", (event) => {
         const name = event.detail.name;
-        const graphElement: HTMLElement = detailsDialog
-          .querySelector(`sl-tab-panel[name="${name}"]`)
-          .querySelector(".entity-graph");
+        const graphElement = safeQuerySelector<HTMLElement>(`sl-tab-panel[name="${name}"] .entity-graph`, detailsDialog);
         renderGraphByName(graphElement, graph, graphTabMap[name]);
       });
 
@@ -248,12 +246,10 @@ export const configureDetailsDialog = () => {
         "sl-after-show",
         (_) => {
           const name =
-            detailsDialog.querySelector(`sl-tab[active]`).textContent;
-          const graphElement: HTMLElement = detailsDialog
-            .querySelector(`sl-tab-panel[name="${name}"]`)
-            .querySelector(".entity-graph");
+            safeQuerySelector(`sl-tab[active]`, detailsDialog).textContent!;
+          const graphElement: HTMLElement = safeQuerySelector(`sl-tab-panel[name="${name}"] .entity-graph`, detailsDialog);
           renderGraphByName(graphElement, graph, graphTabMap[name]);
-          graphRenderer.refresh();
+          graphRenderer!.refresh();
         }
       );
 
@@ -285,7 +281,7 @@ export const configureDetailsDialog = () => {
 
 type CreateGraphContextMenuResponse = [HTMLElement | Element, () => void]
 const createGraphContextMenu = (): CreateGraphContextMenuResponse => {
-  const graphContextMenuElement: HTMLElement | Element = document.querySelector(".graph-context-menu");
+  const graphContextMenuElement: HTMLElement | Element = safeQuerySelector(".graph-context-menu");
   const resetGraphContextMenu = () => {
     (graphContextMenuElement as HTMLElement).style.visibility = "hidden";
     graphContextMenuElement.removeAttribute("selected-node");
