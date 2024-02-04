@@ -11,12 +11,12 @@ export const removeAllChildNodes = (parent: Element) => {
 
 export const addSafeEventListener = <Type extends Event>(
   element: Element, eventName: string, eventHandler: (event: Type) => void) => {
-  const safeEvent = (event: Type) => {
+  function safeEvent(this: Element, event: Event) {
     if (event.target !== element) {
       return;
     }
 
-    eventHandler(event);
+    eventHandler(event as Type);
   };
 
   element.addEventListener(eventName, safeEvent);

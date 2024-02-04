@@ -7,6 +7,8 @@
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitOverride": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true
     }
 }
