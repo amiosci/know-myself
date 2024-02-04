@@ -9,6 +9,8 @@
         "noImplicitOverride": true,
         "strictNullChecks": true,
         "strictBindCallApply": true,
-        "strictFunctionTypes": true
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": true,
+        "useUnknownInCatchVariables": true
     }
 }
