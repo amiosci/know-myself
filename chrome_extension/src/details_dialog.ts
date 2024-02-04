@@ -10,7 +10,7 @@ import {
 import { subgraph } from "graphology-operators";
 import Color from "colorjs.io";
 
-import { removeAllChildNodes, addSafeEventListener, safeQuerySelector } from "../utilities";
+import { removeAllChildNodes, addSafeEventListener, safeQuerySelector } from "./utilities";
 import AbstractGraph, { Attributes } from "graphology-types";
 import { SubGraphNodes } from "graphology-operators/subgraph";
 

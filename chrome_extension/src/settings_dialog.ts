@@ -1,5 +1,5 @@
 import * as shoelace from '@shoelace-style/shoelace';
-import { getApiHost, safeQuerySelector, addSafeEventListener } from "../utilities";
+import { getApiHost, safeQuerySelector, addSafeEventListener } from "./utilities";
 
 export const configureSettingsDialog = async () => {
   const settingsDialog: shoelace.SlDialog = safeQuerySelector(".settings-dialog");

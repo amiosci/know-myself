@@ -1,4 +1,4 @@
-import { addSafeEventListener, safeQuerySelector } from "../utilities";
+import { addSafeEventListener, safeQuerySelector } from "./utilities";
 import { getProcessingQueue, getTaskProcessingResults } from "./api";
 
 import { GridOptions, IRowNode, RowClickedEvent, createGrid } from 'ag-grid-community';

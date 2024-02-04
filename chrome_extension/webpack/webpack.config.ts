@@ -8,9 +8,9 @@ const config: webpack.Configuration = {
     mode: 'development',
     target: 'web',
     entry: {
-        app: './src/app/app.ts',
-        popup: './src/popup/popup.ts',
-        service_worker: './src/service_worker/worker.ts',
+        app: './src/app.ts',
+        popup: './src/popup.ts',
+        service_worker: './src/worker.ts',
         recorder: './src/recorder.ts',
     },
     module: {
@@ -58,9 +58,12 @@ const config: webpack.Configuration = {
                     },
                 },
                 {
-                    from: 'src/manifest.json',
-                    to: '.'
-                }
+                    from: 'config/*.*',
+                    // copy to output root
+                    to({ context, absoluteFilename }) {
+                        return "./[name][ext]";
+                    },
+                },
             ]
         })
     ]

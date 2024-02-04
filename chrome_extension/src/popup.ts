@@ -1,5 +1,5 @@
 import { registerDocument, getDocumentAnnotations } from "./api";
-import { safeQuerySelector } from "../utilities";
+import { safeQuerySelector } from "./utilities";
 
 const getCurrentTab = async () => {
   const queryOptions = { active: true, lastFocusedWindow: true };
