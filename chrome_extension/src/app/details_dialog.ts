@@ -11,6 +11,8 @@ import { subgraph } from "graphology-operators";
 import Color from "colorjs.io";
 
 import { removeAllChildNodes, addSafeEventListener } from "./utilities";
+import AbstractGraph, { Attributes } from "graphology-types";
+import { SubGraphNodes } from "graphology-operators/subgraph";
 
 export const configureDetailsDialog = () => {
   const detailsDialog: shoelace.SlDialog = document.querySelector(".document-dialog");
@@ -35,7 +37,7 @@ export const configureDetailsDialog = () => {
   const graphContainerElement = detailsDialog.querySelector(
     ".entity-graph-container"
   );
-  let graphRenderer = null;
+  let graphRenderer: Sigma | null = null;
 
   // reset dialog elements after animations finalize
   addSafeEventListener(detailsDialog, "sl-after-hide", (_) => {
@@ -48,16 +50,16 @@ export const configureDetailsDialog = () => {
     removeAllChildNodes(graphContainerElement);
   });
 
-  const renderGraphByName = (element, documentGraph, components) => {
+  const renderGraphByName = (element: HTMLElement, documentGraph: AbstractGraph<Attributes, Attributes, Attributes>, components: SubGraphNodes<Attributes>) => {
     const componentGraph = subgraph(documentGraph, components);
     if (graphRenderer !== null) {
       debugger;
     }
 
     type NodeCoordinate = [string, boolean]
-
+    type NodePosition = { x: number, y: number }
     const getNodeAtCoordinate = (
-      { x, y },
+      { x, y }: NodePosition,
       { minimumDistance = 1, distanceTolerance = 0.1 } = {}
     ): NodeCoordinate => {
       const nodeDistances = componentGraph.mapNodes((_, attr) => {
@@ -79,7 +81,7 @@ export const configureDetailsDialog = () => {
       return [componentGraph.nodes()[closestNodeIndex], nodeInContext];
     };
 
-    const getEdgeAtCoordinate = ({ x, y }) => {
+    const getEdgeAtCoordinate = ({ x, y }: NodePosition) => {
       // TODO: edge calculation requires recalculating line between node attributes and testing collision
       //          no position data is maintained for edges
       return ["", Number.POSITIVE_INFINITY];
@@ -184,7 +186,12 @@ export const configureDetailsDialog = () => {
     });
   };
 
-  const openForDocument = ({ summary, entities, url }) => {
+  type OpenForDocumentRequest = {
+    summary: string
+    entities: kms.EntityRelation[]
+    url: string
+  }
+  const openForDocument = ({ summary, entities, url }: OpenForDocumentRequest) => {
     summaryElement.textContent = summary;
     urlElement.textContent = url;
 
@@ -203,7 +210,7 @@ export const configureDetailsDialog = () => {
       // render graph on tab change
       graphTabGroup.addEventListener("sl-tab-show", (event) => {
         const name = event.detail.name;
-        const graphElement = detailsDialog
+        const graphElement: HTMLElement = detailsDialog
           .querySelector(`sl-tab-panel[name="${name}"]`)
           .querySelector(".entity-graph");
         renderGraphByName(graphElement, graph, graphTabMap[name]);
@@ -242,7 +249,7 @@ export const configureDetailsDialog = () => {
         (_) => {
           const name =
             detailsDialog.querySelector(`sl-tab[active]`).textContent;
-          const graphElement = detailsDialog
+          const graphElement: HTMLElement = detailsDialog
             .querySelector(`sl-tab-panel[name="${name}"]`)
             .querySelector(".entity-graph");
           renderGraphByName(graphElement, graph, graphTabMap[name]);
@@ -285,9 +292,9 @@ const createGraphContextMenu = (): CreateGraphContextMenuResponse => {
   };
 
   const menuItemActions = {
-    documents: (node) => { },
-    update: (node) => { },
-    delete: (node) => { },
+    documents: (node: any) => { },
+    update: (node: any) => { },
+    delete: (node: any) => { },
   };
 
   addSafeEventListener(graphContextMenuElement, "sl-select", (event: kms.GraphSelectEvent) => {
@@ -302,7 +309,7 @@ const createGraphContextMenu = (): CreateGraphContextMenuResponse => {
   return [graphContextMenuElement, resetGraphContextMenu];
 };
 
-const loadGraph = (graphData) => {
+const loadGraph = (graphData: kms.EntityRelation[]): [DirectedGraph<Attributes, Attributes, Attributes>, { [id: string]: string[]; }] => {
   const graph = new DirectedGraph({
     multi: true,
   });
@@ -327,7 +334,7 @@ const loadGraph = (graphData) => {
     });
   }
 
-  const connectionMap = {};
+  const connectionMap: { [id: string]: number } = {};
   let maxConnections = 0;
 
   graph.forEachEdge(
@@ -376,7 +383,7 @@ const loadGraph = (graphData) => {
     (x) => x.length >= componentMinimumSize
   );
 
-  const graphTabMap = {};
+  const graphTabMap: { [id: string]: string[]; } = {};
   for (const component of componentNodes) {
     component.sort((x, y) => (connectionMap[y] ?? 0) - (connectionMap[x] ?? 0));
     const primaryNode = component[0];
@@ -386,9 +393,10 @@ const loadGraph = (graphData) => {
   return [graph, graphTabMap];
 };
 
-const defaultLogGraphEvents = (sigmaGraph, sigmaRenderer) => {
+const defaultLogGraphEvents = (
+  sigmaGraph: AbstractGraph<Attributes, Attributes, Attributes>, sigmaRenderer: Sigma) => {
   // non-stage events won't work. Log them all until they do!
-  const logEvent = (event, itemType, item, onMessage = console.log) => {
+  const logEvent = (event: string, itemType: string, item: unknown, onMessage = console.log) => {
     let message = `Event "${event}"`;
     if (item && itemType) {
       const label =
@@ -417,6 +425,7 @@ const defaultLogGraphEvents = (sigmaGraph, sigmaRenderer) => {
     "doubleClickNode",
     "wheelNode",
   ].forEach((eventType) =>
+    // @ts-ignore
     sigmaRenderer.on(eventType, ({ node }) => logEvent(eventType, "node", node))
   );
 
@@ -429,6 +438,7 @@ const defaultLogGraphEvents = (sigmaGraph, sigmaRenderer) => {
     "enterEdge",
     "leaveEdge",
   ].forEach((eventType) =>
+    // @ts-ignore
     sigmaRenderer.on(eventType, ({ edge }) => logEvent(eventType, "edge", edge))
   );
 };

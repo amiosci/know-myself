@@ -30,7 +30,11 @@ export const createResultsTable = async (events: ResultsTableEvents) => {
   return resultsGrid;
 };
 
-export const createTasksTable = async ({ onProcessRequest }) => {
+type CreateTasksTableRequest = {
+  onProcessRequest: (taskIds: string[]) => Promise<void>
+}
+
+export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableRequest) => {
   const tasksTable: HTMLElement = document.querySelector(".tasks-table");
   const pendingTasksData = await getProcessingQueue();
 

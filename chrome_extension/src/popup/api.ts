@@ -1,4 +1,4 @@
-export const getDocumentAnnotations = async ({ hash }) => {
+export const getDocumentAnnotations = async ({ hash }: kms.DocumentReference) => {
   const apiHost = await getApiHost();
   const getAnnotationResponse = await fetch(
     `${apiHost}/documents/${hash}/annotations`,
@@ -15,7 +15,7 @@ export const getDocumentAnnotations = async ({ hash }) => {
   return responseBody["annotations"];
 };
 
-export const removeDocumentAnnotation = async ({ hash, annotation }) => {
+export const removeDocumentAnnotation = async ({ hash, annotation }: kms.DocumentReference) => {
   const apiHost = await getApiHost();
   const removeAnnotationResponse = await fetch(
     `${apiHost}/documents/${hash}/annotations`,
@@ -34,7 +34,7 @@ export const removeDocumentAnnotation = async ({ hash, annotation }) => {
   console.log(responseBody);
 };
 
-export const registerDocument = async ({ url, title }) => {
+export const registerDocument = async ({ url, title }: kms.CreateDocumentRequest) => {
   const protocol = url.split("//")[0];
   if (protocol.indexOf("chrome") > -1) {
     return;

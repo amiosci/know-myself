@@ -1,6 +1,23 @@
 declare namespace kms {
+    export interface EntityRelation {
+        [key: string]: string
+        entity: string
+        target: string
+        relationship: string
+    }
+
+    export interface CreateDocumentRequest {
+        url: string
+        title: string
+    }
+
+    export interface DocumentReference {
+        hash: string
+        annotation?: string
+    }
+
     export interface RecorderRequest {
-        type: string
+        type: "start-recording" | "stop-recording"
         target: string
 
         // The target frame identifier
@@ -8,8 +25,8 @@ declare namespace kms {
     }
 
     export interface RecorderResponse {
-        type: string
-        target: string
+        type: "recording-completed"
+        target: "recorder-parent"
         data: {
             tabId: number
             url: string
@@ -28,7 +45,7 @@ declare namespace kms {
     export interface GraphSelectEvent extends Event {
         detail: {
             item: {
-                value: string
+                value: "documents" | "update" | "delete"
             }
         }
     }

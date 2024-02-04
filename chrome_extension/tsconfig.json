@@ -3,5 +3,9 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "sourceMap": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noImplicitOverride": true,
     }
 }

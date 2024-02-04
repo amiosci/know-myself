@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     });
   }
 
-  const contextMenuOptions = {
+  const contextMenuOptions: { [menuId: string]: string } = {
     "knowledge_agent.send_url": "Process Contents",
     "knowledge_agent.add_annotation": "Add Annotation",
   };

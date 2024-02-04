@@ -47,7 +47,7 @@ export const getProcessingQueue = async (): Promise<kms.TaskQueueRecord[]> => {
   return apiResponseBody;
 };
 
-export const getTaskMetrics = async (taskId) => {
+export const getTaskMetrics = async (taskId: string) => {
   const apiHost = await getApiHost();
   const getTaskMetricsResponse = await fetch(
     `${apiHost}/tasks/${taskId}/metrics`,
@@ -60,7 +60,7 @@ export const getTaskMetrics = async (taskId) => {
   return taskMetrics;
 };
 
-export const reprocessTask = async (taskId) => {
+export const reprocessTask = async (taskId: string) => {
   const apiHost = await getApiHost();
   const apiResponse = await fetch(`${apiHost}/tasks/${taskId}/action`, {
     method: "POST",

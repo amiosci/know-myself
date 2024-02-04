@@ -1,4 +1,3 @@
-import { addSafeEventListener } from "./utilities";
 import { configureDetailsDialog } from "./details_dialog";
 import { configureSettingsDialog } from "./settings_dialog";
 import { createResultsTable, createTasksTable } from "./tables";
@@ -22,8 +21,9 @@ const init = async () => {
       });
     }
   });
+
   await createTasksTable({
-    onProcessRequest: async (taskIds) => {
+    onProcessRequest: async (taskIds: string[]) => {
       await Promise.all(taskIds.map(reprocessTask));
     },
   });

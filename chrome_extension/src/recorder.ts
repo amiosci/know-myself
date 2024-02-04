@@ -13,8 +13,8 @@ chrome.runtime.onMessage.addListener(async (message: kms.RecorderRequest) => {
     }
 });
 
-let recorder: MediaRecorder;
-let data = [];
+let recorder: MediaRecorder | null = null;
+let data: Blob[] = [];
 
 const startRecording = async (streamId: number) => {
     if (recorder?.state === 'recording') {
@@ -67,7 +67,7 @@ const startRecording = async (streamId: number) => {
 
 
         // Clear state ready for next recording
-        recorder = undefined;
+        recorder = null;
         data = [];
     };
     recorder.start();

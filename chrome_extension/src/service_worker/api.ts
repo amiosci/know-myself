@@ -1,4 +1,4 @@
-export const registerDocument = async ({ url, title }) => {
+export const registerDocument = async ({ url, title }: kms.CreateDocumentRequest) => {
   const apiHost = await getApiHost();
   const registerResultResponse = await fetch(`${apiHost}/process`, {
     method: "POST",
@@ -16,7 +16,7 @@ export const registerDocument = async ({ url, title }) => {
   return resultResponseBody["hash"];
 };
 
-export const addDocumentAnnotation = async ({ hash, annotation }) => {
+export const addDocumentAnnotation = async ({ hash, annotation }: kms.DocumentReference) => {
   const apiHost = await getApiHost();
   const addAnnotationResponse = await fetch(
     `${apiHost}/documents/${hash}/annotations`,
@@ -35,7 +35,7 @@ export const addDocumentAnnotation = async ({ hash, annotation }) => {
   console.log(responseBody);
 };
 
-export const getDocumentAnnotation = async ({ hash }) => {
+export const getDocumentAnnotation = async ({ hash }: kms.DocumentReference) => {
   const apiHost = await getApiHost();
   const getAnnotationResponse = await fetch(
     `${apiHost}/documents/${hash}/annotations`,
@@ -52,7 +52,7 @@ export const getDocumentAnnotation = async ({ hash }) => {
   return responseBody["annotations"];
 };
 
-export const removeDocumentAnnotation = async ({ hash, annotation }) => {
+export const removeDocumentAnnotation = async ({ hash, annotation }: kms.DocumentReference) => {
   const apiHost = await getApiHost();
   const removeAnnotationResponse = await fetch(
     `${apiHost}/documents/${hash}/annotations`,
