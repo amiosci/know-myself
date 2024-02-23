@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "WDIO Test",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/chrome_extension",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "wdio"],
+      "outFiles": [
+        "${workspaceFolder}/chrome_extension/dist/*.js",
+        "!**/node_modules/**"
+      ]
+    }
+  ]
+}

@@ -1,16 +1,18 @@
 {
-    "compilerOptions": {
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
-        "sourceMap": true,
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noImplicitOverride": true,
-        "strictNullChecks": true,
-        "strictBindCallApply": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "useUnknownInCatchVariables": true
-    }
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+    "incremental": true,
+    "types": ["node", "webdriverio/async", "mocha"]
+  }
 }

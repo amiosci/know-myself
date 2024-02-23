@@ -1,10 +1,10 @@
 import { browser } from '@wdio/globals'
 
-// describe('Extension Popup', () => {
-//     it('should open', async () => {
-//         await browser.openExtensionPopup('Know Myself')
-//     });
-// });
+describe('Extension Popup', () => {
+    it('should open', async () => {
+        await browser.openExtensionPopup('Know Myself')
+    });
+});
 
 describe('my awesome website', () => {
     it('should do some assertions', async () => {

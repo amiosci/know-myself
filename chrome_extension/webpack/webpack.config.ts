@@ -6,7 +6,9 @@ const repoRoot = path.join(__dirname, '/..')
 
 const config: webpack.Configuration = {
     mode: 'development',
+    watch: true,
     target: 'web',
+    devtool: 'cheap-source-map',
     entry: {
         app: './src/app.ts',
         popup: './src/popup.ts',
@@ -30,6 +32,9 @@ const config: webpack.Configuration = {
     },
     output: {
         path: path.resolve(repoRoot, 'dist'),
+        // Bundle absolute resource paths in the source-map,
+        // so VSCode can match the source file.
+        devtoolModuleFilenameTemplate: '[absolute-resource-path]'
     },
     plugins: [
         new CopyPlugin({

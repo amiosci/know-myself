@@ -31,3 +31,5 @@ function Start-Neo4j {
 Start-Database
 Start-Redis
 # Start-Neo4j
+
+docker start knowledge_agent_postgres knowledge_agent_redis

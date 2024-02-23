@@ -8,7 +8,7 @@ export async function openExtensionPopup(this: WebdriverIO.Browser, extensionNam
     const extensionNames = await extensions.map(async (ext) => (
         await ext.$('#name').getText()));
     console.log('Found extensions with name')
-    console.log(extensionNames);
+    // console.log(extensionNames);
     const extension: WebdriverIO.Element = await extensions.find(async (ext) => (
         await ext.$('#name').getText()) === extensionName
     )
@@ -29,5 +29,3 @@ declare global {
         }
     }
 }
-
-

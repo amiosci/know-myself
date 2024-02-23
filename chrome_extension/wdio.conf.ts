@@ -14,11 +14,16 @@ const baseConfig: Options.Testrunner = {
         autoCompile: true,
         tsNodeOpts: {
             project: './tsconfig.json',
-            transpileOnly: true
+            // transpileOnly: false,
+            emit: true,
+            compilerHost: true,
+            compilerOptions: {
+                "outDir": "./wdio_ts",
+            }
         }
     },
     specs: [
-        './src/**/*.test.ts'
+        './test/**/*.test.ts'
     ],
     // Patterns to exclude.
     exclude: [
