@@ -3,8 +3,11 @@ import { configureSettingsDialog } from "./settings_dialog";
 import { createResultsTable, createTasksTable } from "./tables";
 import { getDocumentSummary, getDocumentEntities, reprocessTask } from "./api";
 
+import './app.scss';
+
 const init = async () => {
   const openForDocument = configureDetailsDialog();
+  await configureSettingsDialog();
 
   await createResultsTable({
     onRowClicked: async (rowData: kms.TaskProcessingResult) => {
@@ -27,8 +30,6 @@ const init = async () => {
       await Promise.all(taskIds.map(reprocessTask));
     },
   });
-
-  await configureSettingsDialog();
 };
 
 document.readyState === "complete" ? init() : (window.onload = init);

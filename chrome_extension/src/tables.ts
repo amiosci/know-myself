@@ -2,6 +2,7 @@ import { addSafeEventListener, safeQuerySelector } from "./utilities";
 import { getProcessingQueue, getTaskProcessingResults } from "./api";
 
 import { GridOptions, IRowNode, RowClickedEvent, createGrid } from 'ag-grid-community';
+import "ag-grid-community/styles/ag-grid.css";
 
 type ResultsTableEvents = {
   onRowClicked: (rowData: kms.TaskProcessingResult) => void;

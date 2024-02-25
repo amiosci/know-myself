@@ -14,6 +14,7 @@ const config: webpack.Configuration = {
         popup: './src/popup.ts',
         service_worker: './src/worker.ts',
         recorder: './src/recorder.ts',
+        shoelace: './node_modules/@shoelace-style/shoelace/dist/shoelace.js'
     },
     module: {
         rules: [
@@ -22,6 +23,10 @@ const config: webpack.Configuration = {
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
+            {
+                test: /\.(sa|sc|c)ss$/,
+                use: ["style-loader", "css-loader", "sass-loader"]
+            }
         ],
     },
     resolve: {
@@ -40,20 +45,8 @@ const config: webpack.Configuration = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: 'node_modules/smart-webcomponents-community/source/styles/font',
-                    to: './font',
-                },
-                {
                     from: 'node_modules/@shoelace-style/shoelace/dist',
                     to: './shoelace_dist',
-                },
-                {
-                    from: 'node_modules/smart-webcomponents-community/source/styles/smart.default.css',
-                    to: './smart-webcomponents.css'
-                },
-                {
-                    from: 'node_modules/@shoelace-style/shoelace/dist/shoelace.js',
-                    to: '.'
                 },
                 {
                     from: 'html/*.html',
