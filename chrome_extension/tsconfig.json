@@ -13,6 +13,12 @@
     "strictPropertyInitialization": true,
     "useUnknownInCatchVariables": true,
     "incremental": true,
-    "types": ["node", "webdriverio/async", "mocha"]
+    "types": [
+      "node",
+      "@wdio/globals/types",
+      "@wdio/mocha-framework",
+      "mocha",
+      "chrome"
+    ]
   }
 }
