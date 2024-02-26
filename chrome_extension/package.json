@@ -16,6 +16,8 @@
         "create-wdio": "^8.4.6",
         "css-loader": "^6.10.0",
         "extension-cli": "^1.2.4",
+        "file-loader": "^6.2.0",
+        "font-awesome": "^4.7.0",
         "mocha": "^10.2.0",
         "sass-loader": "^14.1.1",
         "style-loader": "^3.3.4",

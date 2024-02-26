@@ -1,41 +1,52 @@
 import { addSafeEventListener, safeQuerySelector } from "./utilities";
 import { getProcessingQueue, getTaskProcessingResults } from "./api";
-
-import { GridOptions, IRowNode, RowClickedEvent, createGrid } from 'ag-grid-community';
-import "ag-grid-community/styles/ag-grid.css";
+import {
+  GridOptions,
+  IRowNode,
+  RowClickedEvent,
+  createGrid,
+} from "ag-grid-community";
 
 type ResultsTableEvents = {
   onRowClicked: (rowData: kms.TaskProcessingResult) => void;
-}
+};
 
 export const createResultsTable = async (events: ResultsTableEvents) => {
   const resultsTable = safeQuerySelector<HTMLElement>(".results-table");
   const resultsTableData = await getTaskProcessingResults();
 
   const gridOptions: GridOptions = {
-    rowData: resultsTableData, columnDefs: [
-      { field: 'url' },
-      { field: 'hash' },
-      { field: 'has_summary' },
-      { field: 'last_updated' },
+    rowData: resultsTableData,
+    columnDefs: [
+      { field: "url", filter: true },
+      { field: "hash" },
+      { field: "has_summary" },
+      { field: "last_updated" },
     ],
     pagination: true,
   };
-  const resultsGrid = createGrid<kms.TaskProcessingResult>(resultsTable, gridOptions);
+  const resultsGrid = createGrid<kms.TaskProcessingResult>(
+    resultsTable,
+    gridOptions
+  );
 
-  resultsGrid.addEventListener('rowClicked',
+  resultsGrid.addEventListener(
+    "rowClicked",
     (event: RowClickedEvent<kms.TaskProcessingResult>) => {
       events.onRowClicked(event.data!);
-    });
+    }
+  );
 
   return resultsGrid;
 };
 
 type CreateTasksTableRequest = {
-  onProcessRequest: (taskIds: string[]) => Promise<void>
-}
+  onProcessRequest: (taskIds: string[]) => Promise<void>;
+};
 
-export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableRequest) => {
+export const createTasksTable = async ({
+  onProcessRequest,
+}: CreateTasksTableRequest) => {
   const tasksTable = safeQuerySelector<HTMLElement>(".tasks-table");
   const pendingTasksData = await getProcessingQueue();
 
@@ -45,16 +56,17 @@ export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableReq
   };
 
   const gridOptions: GridOptions<kms.TaskQueueRecord> = {
-    rowData: pendingTasksData, columnDefs: [
-      { field: 'url' },
-      { field: 'task_name' },
-      { field: 'status' },
-      { field: 'status_reason' },
-      { field: 'updated_at' },
+    rowData: pendingTasksData,
+    columnDefs: [
+      { field: "url", filter: true },
+      { field: "task_name" },
+      { field: "status", filter: true },
+      { field: "status_reason" },
+      { field: "updated_at" },
     ],
     pagination: true,
     rowMultiSelectWithClick: true,
-    rowSelection: 'multiple',
+    rowSelection: "multiple",
     isRowSelectable: canSelectRow,
   };
   const tasksGrid = createGrid<kms.TaskQueueRecord>(tasksTable, gridOptions);
@@ -70,22 +82,18 @@ export const createTasksTable = async ({ onProcessRequest }: CreateTasksTableReq
 
   addSafeEventListener(reprocessButtonElement, "click", async (e) => {
     const selectedTasks = tasksGrid.getSelectedRows();
-    const taskIds = selectedTasks.map(
-      (x) => x.task_id
-    );
+    const taskIds = selectedTasks.map((x) => x.task_id);
 
     debugger;
     await onProcessRequest(taskIds);
   });
 
-  const refreshButtonElement = safeQuerySelector(
-    ".refresh-processing-queue"
-  );
+  const refreshButtonElement = safeQuerySelector(".refresh-processing-queue");
 
   addSafeEventListener(refreshButtonElement, "click", async (e) => {
     const updatedDataSource = await getProcessingQueue();
     tasksGrid.updateGridOptions({
-      rowData: updatedDataSource
+      rowData: updatedDataSource,
     });
   });
 
