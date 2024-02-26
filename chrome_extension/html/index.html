@@ -44,30 +44,38 @@
             <sl-tab slot="nav" panel="tasks">Processing Queue</sl-tab>
 
             <sl-tab-panel name="results">
-              <div class="content-container">
-                <sl-breadcrumb>
-                  <sl-breadcrumb-item>Home</sl-breadcrumb-item>
-                </sl-breadcrumb>
-              </div>
-              <div class="table-container">
-                <div class="results-table table-element ag-theme-quartz"></div>
+              <div class="panel-content-container">
+                <div class="content-container">
+                  <sl-breadcrumb>
+                    <sl-breadcrumb-item>Home</sl-breadcrumb-item>
+                  </sl-breadcrumb>
+                </div>
+                <div class="table-container">
+                  <div
+                    class="results-table table-element ag-theme-quartz"
+                  ></div>
+                </div>
               </div>
             </sl-tab-panel>
 
             <sl-tab-panel name="tasks">
-              <div class="content-container">
-                <sl-button
-                  class="reprocess-failed-tasks"
-                  variant="primary"
-                  disabled
-                  >Re-process</sl-button
-                >
-                <sl-button class="refresh-processing-queue" variant="secondary"
-                  >Refresh</sl-button
-                >
-              </div>
-              <div class="table-container">
-                <div class="tasks-table table-element ag-theme-quartz"></div>
+              <div class="panel-content-container">
+                <div class="content-container">
+                  <sl-button
+                    class="reprocess-failed-tasks"
+                    variant="primary"
+                    disabled
+                    >Re-process</sl-button
+                  >
+                  <sl-button
+                    class="refresh-processing-queue"
+                    variant="secondary"
+                    >Refresh</sl-button
+                  >
+                </div>
+                <div class="table-container">
+                  <div class="tasks-table table-element ag-theme-quartz"></div>
+                </div>
               </div>
             </sl-tab-panel>
           </sl-tab-group>

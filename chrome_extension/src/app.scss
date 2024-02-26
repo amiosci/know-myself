@@ -70,12 +70,17 @@
   font-size: 2.5rem;
 }
 
-.table-container {
+.panel-content-container {
   display: flex;
-  width: 1000px;
-  height: 800px;
+  flex-direction: column;
+}
 
-  > .table-element {
-    flex: 1 1 0px;
-  }
+.table-container {
+  height: 1000px;
+}
+
+// ag-grid doesn't seem to like flex out of the box
+.table-element {
+  height: 100%;
+  width: 100%;
 }

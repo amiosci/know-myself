@@ -17,6 +17,9 @@ export const createResultsTable = async (events: ResultsTableEvents) => {
 
   const gridOptions: GridOptions = {
     rowData: resultsTableData,
+    autoSizeStrategy: {
+      type: "fitGridWidth",
+    },
     columnDefs: [
       { field: "url", filter: true },
       { field: "hash" },
@@ -57,8 +60,17 @@ export const createTasksTable = async ({
 
   const gridOptions: GridOptions<kms.TaskQueueRecord> = {
     rowData: pendingTasksData,
+    autoSizeStrategy: {
+      type: "fitGridWidth",
+    },
     columnDefs: [
-      { field: "url", filter: true },
+      {
+        field: "url",
+        filter: true,
+        headerCheckboxSelection: true,
+        showDisabledCheckboxes: true,
+        checkboxSelection: true,
+      },
       { field: "task_name" },
       { field: "status", filter: true },
       { field: "status_reason" },
